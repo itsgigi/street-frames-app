@@ -1,98 +1,119 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react';
+import { ScrollView, View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Container } from '@/components/ui/Container';
+import { nextEvent, pastEvents } from '@/services/mockData';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-brand-main">
+      {/* Header */}
+      <View className="bg-brand-main px-4 py-3 flex-row items-center justify-between">
+        <Pressable>
+          <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
+            <Ionicons name="menu" size={24} color="#231a13" />
+          </View>
+        </Pressable>
+        <Text className="text-lg font-bold text-brand-text">STREET FRAMES MILAN</Text>
+        <Pressable onPress={() => router.push('/profile')}>
+          <View className="w-10 h-10 rounded-full bg-brand-secondary items-center justify-center">
+            <Ionicons name="person" size={20} color="#231a13" />
+          </View>
+        </Pressable>
+      </View>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <Container>
+          {/* Next Meetup Section */}
+          <View className="mb-6">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-base font-semibold text-brand-secondary">NEXT MEETUP</Text>
+              <Pressable>
+                <Text className="text-sm text-blue-500">View All</Text>
+              </Pressable>
+            </View>
+            
+            <TouchableOpacity
+              onPress={() => router.push(`/event/${nextEvent.id}`)}
+              className="rounded-[50px] overflow-hidden mb-4"
+              activeOpacity={0.9}
+            >
+              <Image
+                source={{ uri: nextEvent.coverImage }}
+                className="w-full h-96"
+                resizeMode="cover"
+              />
+              <View className="absolute inset-0 bg-black/30" />
+              <View className="absolute inset-0 p-4 justify-between">
+                <View className="flex-row items-start justify-between">
+                  <View className="bg-brand-secondary px-3 py-1 rounded-full">
+                    <Text className="text-white text-xs font-semibold">UPCOMING</Text>
+                  </View>
+                  <Text className="text-white text-sm font-medium">{formatDate(nextEvent.date)}</Text>
+                </View>
+                <View>
+                  <Text className="text-white text-2xl font-bold mb-2">{nextEvent.title}</Text>
+                  <View className="flex-row items-center mb-2">
+                    <Ionicons name="location" size={16} color="#ffffff" />
+                    <Text className="text-white text-sm ml-1">{nextEvent.location}</Text>
+                  </View>
+                  <Text className="text-brand-secondary text-sm font-medium mb-3">
+                    {nextEvent.participantsCount} photographers attending
+                  </Text>
+                  <View className="flex-row justify-end">
+                    <TouchableOpacity
+                      className="bg-white px-6 py-2 rounded-lg border border-gray-300"
+                      activeOpacity={0.8}
+                    >
+                      <Text className="text-brand-text font-semibold">Join</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Past Captures Section */}
+          <View className="mb-6">
+            <Text className="text-base font-semibold text-blue-400 mb-4">PAST CAPTURES</Text>
+            {pastEvents.map((event) => (
+              <TouchableOpacity
+                key={event.id}
+                onPress={() => router.push(`/event/${event.id}`)}
+                className="flex-row items-center mb-4 bg-white rounded-xl p-3"
+                activeOpacity={0.9}
+              >
+                <Image
+                  source={{ uri: event.coverImage }}
+                  className="w-20 h-20 rounded-lg"
+                  resizeMode="cover"
+                />
+                <View className="flex-1 ml-3">
+                  <Text className="text-base font-bold text-brand-text mb-1">{event.title}</Text>
+                  <View className="flex-row items-center">
+                    <Ionicons name="calendar-outline" size={14} color="#9d917c" />
+                    <Text className="text-sm text-gray-600 ml-1">{formatDate(event.date)}</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9d917c" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Container>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
