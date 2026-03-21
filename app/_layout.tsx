@@ -1,27 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
+import {Stack} from 'expo-router';
+import {StatusBar} from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../global.css';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import {useColorScheme} from '@/hooks/use-color-scheme';
+import {AuthProvider, useAuth} from '@/contexts/authContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="event/[id]" 
-          options={{ 
-            headerShown: false,
-            presentation: 'card',
-          }} 
-        />
-      </Stack>
+      <AuthProvider>
+        <InternalLayout />
+      </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
+
+const InternalLayout = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      {user ? (
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </>
+      ) : (
+        <Stack.Screen name="login" options={{ title: 'Login' }} />
+      )}
+    </Stack>
+  );
+};

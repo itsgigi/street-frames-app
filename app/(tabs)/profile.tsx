@@ -1,12 +1,13 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Container } from '@/components/ui/Container';
-import { Section } from '@/components/ui/Section';
-import { ProfileHeader } from '@/components/features/ProfileHeader';
-import { ProfileEventCard } from '@/components/features/ProfileEventCard';
-import { PhotoGrid } from '@/components/features/PhotoGrid';
-import { pastEvents, mockPhotos } from '@/services/mockData';
+import {ScrollView, Text, TouchableOpacity} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {Container} from '@/components/ui/Container';
+import {Section} from '@/components/ui/Section';
+import {ProfileHeader} from '@/components/features/ProfileHeader';
+import {ProfileEventCard} from '@/components/features/ProfileEventCard';
+import {PhotoGrid} from '@/components/features/PhotoGrid';
+import {mockPhotos, pastEvents} from '@/services/mockData';
+import {useAuthMethods} from "@/hooks/useAuthMethods";
 
 // Mock user data - in a real app, this would come from auth context or API
 const mockUser = {
@@ -18,11 +19,14 @@ const mockUser = {
 };
 
 export default function ProfileScreen() {
-  // Filter events the user participated in (mock: show first 3 past events)
   const participatedEvents = pastEvents.slice(0, 3);
+  const { logout } = useAuthMethods();
 
   return (
     <SafeAreaView className="flex-1 bg-brand-main">
+      <TouchableOpacity onPress={logout} className="relative float-end m-2 w-20 z-10 px-3 py-2 rounded bg-gray-200">
+        <Text className="text-blue-500 font-bold">Logout</Text>
+      </TouchableOpacity>
       <ScrollView className="flex-1">
         <Container>
           <ProfileHeader
