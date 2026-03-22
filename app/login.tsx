@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FirebaseError } from 'firebase/app';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 
 export default function LoginScreen() {
@@ -24,14 +25,30 @@ export default function LoginScreen() {
         await signIn(email, password);
       } else {
         await signUp(email, password);
-        // Reset inputs and redirect to login
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        setIsLogin(true);
       }
-    } catch (error) {
-      setError('An error occurred. Please try again.');
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        switch (err.code) {
+          case 'auth/invalid-credential':
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+            setError('Email o password errati. Riprova.');
+            break;
+          case 'auth/invalid-email':
+            setError('Indirizzo email non valido.');
+            break;
+          case 'auth/email-already-in-use':
+            setError('Questo indirizzo email è già registrato.');
+            break;
+          case 'auth/too-many-requests':
+            setError('Troppi tentativi. Attendi qualche minuto e riprova.');
+            break;
+          default:
+            setError('Si è verificato un errore. Riprova.');
+        }
+      } else {
+        setError('Si è verificato un errore. Riprova.');
+      }
     }
   };
 

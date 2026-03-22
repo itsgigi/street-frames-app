@@ -1,6 +1,7 @@
 import React from 'react';
 import {ScrollView, Text, TouchableOpacity} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {Ionicons} from '@expo/vector-icons';
 import {Container} from '@/components/ui/Container';
 import {Section} from '@/components/ui/Section';
 import {ProfileHeader} from '@/components/features/ProfileHeader';
@@ -24,9 +25,6 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-main">
-      <TouchableOpacity onPress={logout} className="relative float-end m-2 w-20 z-10 px-3 py-2 rounded bg-gray-200">
-        <Text className="text-blue-500 font-bold">Logout</Text>
-      </TouchableOpacity>
       <ScrollView className="flex-1">
         <Container>
           <ProfileHeader
@@ -45,6 +43,14 @@ export default function ProfileScreen() {
           </Section>
 
           <PhotoGrid photos={mockPhotos} />
+
+          <TouchableOpacity
+            onPress={logout}
+            className="flex-row items-center justify-center gap-2 mx-4 my-6 py-3 rounded-xl bg-brand-orange"
+          >
+            <Ionicons name="log-out-outline" size={20} color="white" />
+            <Text className="text-white font-bold text-base tracking-wide">Logout</Text>
+          </TouchableOpacity>
         </Container>
       </ScrollView>
     </SafeAreaView>
