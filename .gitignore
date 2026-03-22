@@ -30,6 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# ide-related
+.idea
+
 # local env files
 .env*.local
 
@@ -41,3 +44,7 @@ app-example
 # generated native folders
 /ios
 /android
+
+# google services
+google-services.json
+GoogleService-Info.plist
