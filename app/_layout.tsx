@@ -6,9 +6,13 @@ import '../global.css';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {AuthProvider, useAuth} from '@/contexts/authContext';
+import { useFonts, ChauPhilomeneOne_400Regular } from '@expo-google-fonts/chau-philomene-one';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [fontsLoaded] = useFonts({ ChauPhilomeneOne_400Regular });
+
+  if (!fontsLoaded) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

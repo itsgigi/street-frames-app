@@ -126,6 +126,12 @@ export const pastEvents: Event[] = [
     participantsCount: 18,
     stops: [],
     participants: [],
+    centerLatitude: 45.4508,
+    centerLongitude: 9.1714,
+    photos: [
+      { id: 'p1-1', imageUrl: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400' },
+      { id: 'p1-2', imageUrl: 'https://images.unsplash.com/photo-1508767815186-f4625a5e944e?w=400' },
+    ],
   },
   {
     id: 'event-2',
@@ -137,6 +143,12 @@ export const pastEvents: Event[] = [
     participantsCount: 15,
     stops: [],
     participants: [],
+    centerLatitude: 45.4642,
+    centerLongitude: 9.1914,
+    photos: [
+      { id: 'p2-1', imageUrl: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400' },
+      { id: 'p2-2', imageUrl: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400' },
+    ],
   },
   {
     id: 'event-3',
@@ -148,6 +160,12 @@ export const pastEvents: Event[] = [
     participantsCount: 22,
     stops: [],
     participants: [],
+    centerLatitude: 45.4654,
+    centerLongitude: 9.1896,
+    photos: [
+      { id: 'p3-1', imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400' },
+      { id: 'p3-2', imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400' },
+    ],
   },
 ];
 

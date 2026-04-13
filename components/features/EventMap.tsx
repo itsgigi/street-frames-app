@@ -1,173 +1,209 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Platform, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Stop } from '@/types';
+import { fonts, sf } from '@/constants/theme';
 
-// Conditionally import MapView only if available (requires development build)
 let MapView: any = null;
 let Marker: any = null;
+let Polyline: any = null;
 
 try {
   if (Platform.OS !== 'web') {
     const maps = require('react-native-maps');
     MapView = maps.default;
     Marker = maps.Marker;
+    Polyline = maps.Polyline;
   }
 } catch (e) {
-  // react-native-maps not available (Expo Go)
   MapView = null;
   Marker = null;
+  Polyline = null;
 }
+
+const SCREEN_W = Dimensions.get('window').width;
+const H_PAD = 20;
+const CARD_GAP = 10;
+const CARD_W = 180;
 
 interface EventMapProps {
   stops: Stop[];
 }
 
+function overviewRegion(stops: Stop[]) {
+  const lats = stops.map(s => s.latitude);
+  const lngs = stops.map(s => s.longitude);
+  return {
+    latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
+    longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    latitudeDelta: Math.max((Math.max(...lats) - Math.min(...lats)) * 1.8, 0.015),
+    longitudeDelta: Math.max((Math.max(...lngs) - Math.min(...lngs)) * 1.8, 0.015),
+  };
+}
+
 export const EventMap: React.FC<EventMapProps> = ({ stops }) => {
   const [mapsAvailable, setMapsAvailable] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const mapRef = useRef<any>(null);
+  const stopsRef = useRef(stops);
+  stopsRef.current = stops;
 
   useEffect(() => {
     setMapsAvailable(MapView !== null && Marker !== null);
   }, []);
 
-  if (stops.length === 0) {
-    return (
-      <View className="bg-white p-4 mb-4 rounded-lg">
-        <Text className="text-gray-500 text-center">No stops available for this event</Text>
-      </View>
-    );
-  }
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
 
-  // If maps are not available (Expo Go), show a list view
-  if (!mapsAvailable) {
-    return (
-      <View className="bg-white mb-4 rounded-lg">
-        <View className="p-4 border-b border-gray-200">
-          <Text className="text-lg font-semibold text-brand-text">Event Stops</Text>
-          <Text className="text-xs text-gray-600 mt-1">
-            Map view requires a development build
-          </Text>
-        </View>
-        <View className="p-4">
-          {stops.map((stop, index) => (
-            <View key={stop.id} className="mb-4 pb-4 border-b border-gray-100 last:border-b-0">
-              <View className="flex-row items-center mb-1">
-                <View className="w-8 h-8 rounded-full bg-brand-secondary/20 items-center justify-center mr-3">
-                  <Text className="text-brand-secondary font-semibold text-sm">{index + 1}</Text>
-                </View>
-                <Text className="text-brand-text font-semibold text-base flex-1">
-                  {stop.name}
-                </Text>
-              </View>
-              <View className="ml-11">
-                <Text className="text-gray-600 text-sm">
-                  📍 {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      </View>
-    );
-  }
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (!viewableItems.length || viewableItems[0].index == null) return;
+    const idx = viewableItems[0].index;
+    setActiveIndex(idx);
+    const stop = stopsRef.current[idx];
+    if (mapRef.current && stop) {
+      mapRef.current.animateToRegion({
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 450);
+    }
+  }).current;
 
-  // Calculate region to show all stops
-  const latitudes = stops.map(stop => stop.latitude);
-  const longitudes = stops.map(stop => stop.longitude);
-  const minLat = Math.min(...latitudes);
-  const maxLat = Math.max(...latitudes);
-  const minLng = Math.min(...longitudes);
-  const maxLng = Math.max(...longitudes);
-
-  const region = {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max((maxLat - minLat) * 1.5, 0.01),
-    longitudeDelta: Math.max((maxLng - minLng) * 1.5, 0.01),
-  };
+  if (stops.length === 0) return null;
 
   return (
-    <View className="bg-white mb-4 rounded-lg overflow-hidden">
-      <View className="p-4 border-b border-gray-200">
-        <Text className="text-lg font-semibold text-brand-text">Event Stops</Text>
-      </View>
-      <MapView
-        style={styles.map}
-        initialRegion={region}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-      >
-        {stops.map((stop, index) => (
-          <Marker
-            key={stop.id}
-            coordinate={{
-              latitude: stop.latitude,
-              longitude: stop.longitude,
-            }}
-            title={stop.name}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View style={styles.markerContainer}>
-              <View style={styles.markerCircle}>
-                <Text style={styles.markerText}>{index + 1}</Text>
+    <View style={{ height: 340, borderRadius: 20, overflow: 'hidden' }}>
+
+      {/* ── Map fills everything ── */}
+      {mapsAvailable ? (
+        <MapView
+          ref={mapRef}
+          style={StyleSheet.absoluteFillObject}
+          initialRegion={overviewRegion(stops)}
+          mapType="mutedStandard"
+          showsUserLocation={false}
+          showsMyLocationButton={false}
+        >
+          {Polyline && (
+            <Polyline
+              coordinates={stops.map(s => ({ latitude: s.latitude, longitude: s.longitude }))}
+              strokeColor={sf.orange}
+              strokeWidth={2.5}
+              lineDashPattern={[6, 4]}
+            />
+          )}
+          {stops.map((stop, index) => (
+            <Marker
+              key={stop.id}
+              coordinate={{ latitude: stop.latitude, longitude: stop.longitude }}
+              anchor={{ x: 0.5, y: 0.5 }}
+              tracksViewChanges={false}
+            >
+              <View style={[
+                styles.marker,
+                index === activeIndex ? styles.markerActive : styles.markerInactive,
+              ]}>
+                <Text style={[
+                  styles.markerLabel,
+                  { color: index === activeIndex ? '#fff' : sf.orange },
+                ]}>
+                  {index + 1}
+                </Text>
               </View>
-              <View style={styles.markerPointer} />
-            </View>
-          </Marker>
-        ))}
-      </MapView>
-      <View className="p-4">
-        {stops.map((stop, index) => (
-          <View key={stop.id} className="mb-2">
-            <Text className="text-brand-text font-medium">
-              {index + 1}. {stop.name}
-            </Text>
-          </View>
-        ))}
+            </Marker>
+          ))}
+        </MapView>
+      ) : (
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: sf.surface, alignItems: 'center', justifyContent: 'center', gap: 8 }]}>
+          <Ionicons name="map-outline" size={40} color={sf.grayDark} />
+          <Text style={{ color: sf.grayDark, fontSize: 12 }}>Map requires a development build</Text>
+        </View>
+      )}
+
+      {/* ── Stop count pill ── */}
+      <View style={{
+        position: 'absolute', top: 12, left: 12,
+        backgroundColor: 'rgba(33,34,38,0.72)',
+        borderRadius: 100, paddingHorizontal: 10, paddingVertical: 5,
+      }}>
+        <Text style={{ fontSize: 11, fontWeight: '700', color: sf.cream, letterSpacing: 0.5 }}>
+          {stops.length} STOPS
+        </Text>
       </View>
+
+      {/* ── Floating cards at the bottom ── */}
+      <FlatList
+        horizontal
+        data={stops}
+        keyExtractor={item => item.id}
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={CARD_W + CARD_GAP}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        style={{ position: 'absolute', bottom: 12, left: 0, right: 0 }}
+        contentContainerStyle={{ paddingHorizontal: H_PAD, gap: CARD_GAP }}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        renderItem={({ item, index }) => (
+          <StopCard stop={item} index={index} isActive={index === activeIndex} total={stops.length} />
+        )}
+      />
     </View>
   );
 };
 
+/* ─── Stop Card ─── */
+
+function StopCard({ stop, index, isActive, total }: {
+  stop: Stop; index: number; isActive: boolean; total: number;
+}) {
+  return (
+    <View style={{
+      width: CARD_W,
+      backgroundColor: isActive ? 'rgba(33,34,38,0.92)' : 'rgba(46,47,52,0.82)',
+      borderRadius: 14,
+      padding: 11,
+      borderWidth: 1,
+      borderColor: isActive ? sf.orange : 'rgba(255,255,255,0.08)',
+    }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <View style={{
+          width: 24, height: 24, borderRadius: 12,
+          backgroundColor: isActive ? sf.orange : 'rgba(255,255,255,0.1)',
+          alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Text style={{ color: isActive ? '#fff' : sf.grayDark, fontWeight: '700', fontSize: 11 }}>
+            {index + 1}
+          </Text>
+        </View>
+        <Text style={{ fontSize: 14, fontWeight: '700', color: sf.cream, flex: 1, fontFamily: fonts.heading }} numberOfLines={1}>
+          {stop.name}
+        </Text>
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Ionicons name="location-outline" size={11} color={isActive ? sf.orange : sf.grayDark} />
+        <Text style={{ fontSize: 10, color: isActive ? sf.orange : sf.grayDark }}>
+          {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  map: {
-    width: '100%',
-    height: 300,
+  marker: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 2,
   },
-  markerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  markerActive: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: sf.orange, borderColor: '#ffffff',
   },
-  markerCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#ba5624',
-    borderWidth: 3,
-    borderColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+  markerInactive: {
+    backgroundColor: sf.surface, borderColor: sf.orange,
   },
-  markerText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  markerPointer: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#ba5624',
-    marginTop: -2,
+  markerLabel: {
+    fontWeight: '700', fontSize: 12
   },
 });

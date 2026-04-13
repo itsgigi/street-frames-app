@@ -42,9 +42,13 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
+## Deploy commands 
 
-Join our community of developers creating universal apps.
+eas build --platform ios --profile production
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+EAS will handle code signing automatically (it'll ask to set up credentials on first run — let it manage them). The build runs in the cloud, takes ~15 min.
+
+Once the build completes:
+eas submit --platform ios --profile production --latest
+
+This uploads the .ipa directly to App Store Connect. After ~10 min processing, it appears in TestFlight.

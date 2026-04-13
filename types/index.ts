@@ -28,4 +28,7 @@ export interface Event {
   participantsCount: number;
   stops: Stop[];
   participants: User[];
+  photos?: Photo[];
+  centerLatitude?: number;
+  centerLongitude?: number;
 }

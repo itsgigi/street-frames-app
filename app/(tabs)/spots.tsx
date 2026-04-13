@@ -1,19 +1,195 @@
 import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import {
+  ScrollView, View, Text, Image, TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Container } from '@/components/ui/Container';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import MapView, { Marker } from 'react-native-maps';
+import { LinearGradient } from 'expo-linear-gradient';
+import { nextEvent, pastEvents } from '@/services/mockData';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { Event } from '@/types';
+import { fonts, sf } from '@/constants/theme';
+
+const ALL_EVENTS = [nextEvent, ...pastEvents];
 
 export default function SpotsScreen() {
+  const router = useRouter();
+
   return (
-    <SafeAreaView className="flex-1 bg-brand-main">
-      <ScrollView className="flex-1">
-        <Container>
-          <View className="py-8">
-            <Text className="text-2xl font-bold text-brand-text">Spots</Text>
-            <Text className="text-gray-600 mt-2">Coming soon...</Text>
-          </View>
-        </Container>
+    <SafeAreaView style={{ backgroundColor: sf.cream }}>
+
+      {/* ── Header ── */}
+      <ScreenHeader
+        title="PHOTOWALKS"
+        right={
+          <TouchableOpacity hitSlop={12}>
+            <Ionicons name="search-outline" size={24} color={sf.black} />
+          </TouchableOpacity>
+        }
+      />
+
+      
+      {/* ── Walk cards ── */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.3, shadowRadius: 7 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 150 }}
+      >
+        {ALL_EVENTS.map((event, idx) => (
+          <WalkCard
+            key={event.id}
+            event={event}
+            isUpcoming={idx === 0}
+            onPress={() => router.push(`/event/${event.id}`)}
+          />
+        ))}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/* ─── Walk Card ─── */
+
+const CARD_PAD = 18;
+
+function WalkCard({ event, isUpcoming, onPress }: {
+  event: Event; isUpcoming: boolean; onPress: () => void;
+}) {
+  const CARD_H = 160;
+  const hasMap = event.centerLatitude != null && event.centerLongitude != null;
+
+  return (
+    <View style={{
+      backgroundColor: sf.black,
+      borderRadius: 35,
+      borderColor: sf.white,
+      borderWidth: 5,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 4,
+    }}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
+          paddingHorizontal: CARD_PAD, paddingTop: CARD_PAD, paddingBottom: 14,
+        }}>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+              <Ionicons name="location" size={12} color={sf.orange} />
+              <Text style={{ fontSize: 11, color: sf.orange, fontWeight: '700', letterSpacing: 0.5 }}>
+                {event.location.toUpperCase()}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 17, fontWeight: '700', color: sf.white, marginBottom: 4, fontFamily: fonts.heading }}>{event.title}</Text>
+            <Text style={{ fontSize: 12, color: sf.grayDark }}>
+              {new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {' · '}{event.participantsCount} photographers
+            </Text>
+          </View>
+          {isUpcoming && (
+            <View style={{
+              backgroundColor: sf.orange + '22',
+              paddingHorizontal: 9, paddingVertical: 4, borderRadius: 100,
+              borderWidth: 1, borderColor: sf.orange, marginLeft: 10,
+            }}>
+              <Text style={{ fontSize: 10, fontWeight: '700', color: sf.orange, letterSpacing: 0.5 }}>UPCOMING</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Image grid — bleeds to the right edge */}
+        <View style={{
+          flexDirection: 'row',
+          gap: 10,
+          height: CARD_H,
+          paddingLeft: CARD_PAD,
+          paddingBottom: CARD_PAD,
+        }}>
+          {/* Col 1 – Map */}
+          <View style={{ flex: 1, borderRadius: 12, overflow: 'hidden' }}>
+            {hasMap ? (
+              <MapView
+                style={{ flex: 1 }}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                pitchEnabled={false}
+                rotateEnabled={false}
+                mapType="mutedStandard"
+                initialRegion={{
+                  latitude: event.centerLatitude!,
+                  longitude: event.centerLongitude!,
+                  latitudeDelta: 0.04,
+                  longitudeDelta: 0.04,
+                }}
+              >
+                <Marker coordinate={{ latitude: event.centerLatitude!, longitude: event.centerLongitude! }}>
+                  <View style={{
+                    width: 10, height: 10, borderRadius: 5,
+                    backgroundColor: sf.orange, borderWidth: 2, borderColor: '#fff',
+                  }} />
+                </Marker>
+              </MapView>
+            ) : (
+              <View style={{ flex: 1, backgroundColor: sf.cream, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="map-outline" size={28} color={sf.grayDark} />
+              </View>
+            )}
+          </View>
+
+          {/* Col 2 – Cover image */}
+          <View style={{
+            flex: 1,
+            borderRadius: 12,
+            shadowColor: sf.grayDark,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.15,
+            shadowRadius: 3,
+            elevation: 3,
+          }}
+          >
+            <Image source={{ uri: event.coverImage }} style={{ flex: 1, borderRadius: 12 }} resizeMode="cover" />
+          </View>
+
+          {/* Col 3 – Two stacked photos, half-visible (no right padding → bleeds) */}
+          <View style={{ flex: 1, gap: 10, 
+            shadowColor: sf.grayDark,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.15,
+            shadowRadius: 3,
+            elevation: 3 }}>
+            {(event.photos ?? []).slice(0, 2).map((photo) => (
+              <View key={photo.id} style={{ flex: 1, borderRadius: 12, overflow: 'hidden' }}>
+                <Image source={{ uri: photo.imageUrl }} style={{ flex: 1 }} resizeMode="cover" />
+              </View>
+            ))}
+          </View>
+
+          {/* Gradient fade on the right */}
+          <LinearGradient
+            colors={['rgba(33, 34, 38,0)', 'rgba(33, 34, 38,0.2)', sf.black]}
+            locations={[0, 0.1, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0.8, y: 0 }}
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 60,
+              pointerEvents: 'none',
+              borderBottomRightRadius: 20
+            }}
+          />
+        </View>
+
+      </TouchableOpacity>
+    </View>
   );
 }

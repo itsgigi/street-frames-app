@@ -3,6 +3,21 @@
  * Minimal, modern and photography-oriented design
  */
 
+// Street Frames Milan — Design System v1.0
+// Mirrors the sf.* tokens in tailwind.config.js
+export const sf = {
+  black:      '#212226', // Darkroom Black — primary bg (dark), text on light
+  cream:      '#F2DCC2', // Gelatin Cream — text on dark, warm surfaces
+  orange:     '#BF5B21', // Shutter Orange — primary CTA, active states
+  orangeDark: '#BF522A', // Copper Dark — CTA hover/pressed
+  rust:       '#A6432D', // Rust — deep accent, destructive
+  white:      '#FAFAF8', // App background (light mode)
+  grayLight:  '#EBEBEB', // Dividers, card borders
+  grayMid:    '#B0B0B0', // Placeholder, disabled (decorative only)
+  grayDark:   '#7A7A7A', // Secondary text, metadata, captions
+  surface:    '#2E2F34', // Cards/surfaces on dark backgrounds
+} as const;
+
 export const Colors = {
   // Brand colors from Street Frames Milan
   main: '#f7e2c3',        // Light beige/cream - main background
@@ -52,6 +67,10 @@ export const Spacing = {
   '2xl': 48,
   '3xl': 64,
 };
+
+export const fonts = {
+  heading: 'ChauPhilomeneOne_400Regular',
+} as const;
 
 export const Typography = {
   // Font sizes

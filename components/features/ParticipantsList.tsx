@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { Avatar } from '@/components/ui/Avatar';
+import { View, Text, ScrollView, Image } from 'react-native';
 import { User } from '@/types';
+import { fonts, sf } from '@/constants/theme';
 
 interface ParticipantsListProps {
   participants: User[];
@@ -10,32 +10,34 @@ interface ParticipantsListProps {
 export const ParticipantsList: React.FC<ParticipantsListProps> = ({ participants }) => {
   if (participants.length === 0) {
     return (
-      <View className="bg-white p-4 mb-4 rounded-lg">
-        <Text className="text-gray-500 text-center">No participants yet</Text>
+      <View style={{ backgroundColor: sf.white, borderRadius: 16, padding: 16, alignItems: 'center' }}>
+        <Text style={{ color: sf.grayDark, fontSize: 14 }}>No participants yet</Text>
       </View>
     );
   }
 
   return (
-    <View className="bg-white mb-4 rounded-lg">
-      <View className="p-4 border-b border-gray-200">
-        <Text className="text-lg font-semibold text-brand-text">
-          Participants ({participants.length})
+    <View style={{ backgroundColor: sf.white, borderRadius: 16, overflow: 'hidden' }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12 }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: sf.black, letterSpacing: 0.5, opacity: 0.6,  fontFamily: fonts.heading }}>
+          PHOTOGRAPHERS ({participants.length})
         </Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="p-4">
-        {participants.map((participant) => (
-          <View key={participant.id} className="items-center mr-4">
-            <Avatar
-              source={{ uri: participant.avatar }}
-              size={60}
-              className="mb-2"
-            />
-            <Text className="text-sm font-medium text-brand-text text-center" numberOfLines={1}>
-              {participant.name}
-            </Text>
-            <Text className="text-xs text-gray-600 text-center" numberOfLines={1}>
-              {participant.surname}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, gap: 16 }}
+      >
+        {participants.map((p) => (
+          <View key={p.id} style={{ alignItems: 'center', gap: 6 }}>
+            <View style={{
+              width: 56, height: 56, borderRadius: 28,
+              borderWidth: 2, borderColor: sf.orange, overflow: 'hidden',
+            }}>
+              <Image source={{ uri: p.avatar }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            </View>
+            <Text style={{ fontSize: 11, color: sf.black, opacity: 0.8, fontWeight: '600' }} numberOfLines={1}>
+              {p.name}
             </Text>
           </View>
         ))}

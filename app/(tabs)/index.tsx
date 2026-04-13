@@ -1,118 +1,112 @@
 import React from 'react';
-import { ScrollView, View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
+import { ScrollView, View, Text, Image, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Container } from '@/components/ui/Container';
+import { LinearGradient } from 'expo-linear-gradient';
 import { nextEvent, pastEvents } from '@/services/mockData';
+import { HeroCard } from '@/components/cards/HeroCard';
+import { PastCard } from '@/components/cards/PastCard';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { fonts, sf } from '@/constants/theme';
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   return (
-    <SafeAreaView className="flex-1 bg-brand-main">
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: sf.cream }}>
+
       {/* Header */}
-      <View className="bg-brand-main px-4 py-3 flex-row items-center justify-between">
-        <Pressable>
-          <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
-            <Ionicons name="menu" size={24} color="#231a13" />
-          </View>
-        </Pressable>
-        <Text className="text-lg font-bold text-brand-text">STREET FRAMES MILAN</Text>
-        <Pressable onPress={() => router.push('/profile')}>
-          <View className="w-10 h-10 rounded-full bg-brand-secondary items-center justify-center">
-            <Ionicons name="person" size={20} color="#231a13" />
-          </View>
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: 20, paddingVertical: 18
+      }}>
+        <LinearGradient
+          colors={[sf.orange, 'rgba(242, 220, 194,1)']}
+          locations={[0, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            position: 'absolute', left: 0, bottom: 10, width: "100%", height: 52, zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
+        <Image
+          source={require('@/assets/images/sf_logo.jpg')}
+          style={{ width: 32, height: 32, borderRadius: 8 }}
+          resizeMode="contain"
+        />
+
+        <Text style={{ fontSize: 22, fontWeight: '700', color: sf.black, letterSpacing: 1, fontFamily: fonts.heading }}>
+          STREET FRAMES
+        </Text>
+
+        <Pressable onPress={() => router.push('/(tabs)/profile')} hitSlop={12}>
+          <Image
+            source={{ uri: 'https://i.pravatar.cc/150?img=1' }}
+            style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: sf.orange }}
+          />
         </Pressable>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <Container>
-          {/* Next Meetup Section */}
-          <View className="mb-6">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-base font-semibold text-brand-secondary">NEXT MEETUP</Text>
-              <Pressable>
-                <Text className="text-sm text-blue-500">View All</Text>
-              </Pressable>
-            </View>
-            
-            <TouchableOpacity
-              onPress={() => router.push(`/event/${nextEvent.id}`)}
-              className="rounded-[50px] overflow-hidden mb-4"
-              activeOpacity={0.9}
-            >
-              <Image
-                source={{ uri: nextEvent.coverImage }}
-                className="w-full h-96"
-                resizeMode="cover"
-              />
-              <View className="absolute inset-0 bg-black/30" />
-              <View className="absolute inset-0 p-4 justify-between">
-                <View className="flex-row items-start justify-between">
-                  <View className="bg-brand-secondary px-3 py-1 rounded-full">
-                    <Text className="text-white text-xs font-semibold">UPCOMING</Text>
-                  </View>
-                  <Text className="text-white text-sm font-medium">{formatDate(nextEvent.date)}</Text>
-                </View>
-                <View>
-                  <Text className="text-white text-2xl font-bold mb-2">{nextEvent.title}</Text>
-                  <View className="flex-row items-center mb-2">
-                    <Ionicons name="location" size={16} color="#ffffff" />
-                    <Text className="text-white text-sm ml-1">{nextEvent.location}</Text>
-                  </View>
-                  <Text className="text-brand-secondary text-sm font-medium mb-3">
-                    {nextEvent.participantsCount} photographers attending
-                  </Text>
-                  <View className="flex-row justify-end">
-                    <TouchableOpacity
-                      className="bg-white px-6 py-2 rounded-lg border border-gray-300"
-                      activeOpacity={0.8}
-                    >
-                      <Text className="text-brand-text font-semibold">Join</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+        className='mt-4'
+      >
+        {/* Upcoming Walks */}
+        <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 20 }} />
 
-          {/* Past Captures Section */}
-          <View className="mb-6">
-            <Text className="text-base font-semibold text-blue-400 mb-4">PAST CAPTURES</Text>
+        <View style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 7 }}>
+          <HeroCard
+            imageUri={nextEvent.coverImage}
+            title={nextEvent.title}
+            date={nextEvent.date}
+            participants={nextEvent.participants}
+            participantsCount={nextEvent.participantsCount}
+            onPress={() => router.push(`/event/${nextEvent.id}`)}
+          />
+        </View>
+
+        {/* Past Walks */}
+        <ScreenHeader
+          title="PAST WALKS"
+          style={{ paddingVertical: 0, marginTop: 10, marginBottom: 20 }}
+          right={
+            <Pressable hitSlop={8}>
+              <Text style={{ fontSize: 13, color: sf.orange, fontWeight: '600' }}>See all</Text>
+            </Pressable>
+          }
+        />
+
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 50, gap: 12, paddingBottom: 120, marginTop: 2 }}
+          >
             {pastEvents.map((event) => (
-              <TouchableOpacity
+              <PastCard
                 key={event.id}
+                imageUri={event.coverImage}
+                title={event.title}
+                date={event.date}
+                participants={event.participantsCount}
                 onPress={() => router.push(`/event/${event.id}`)}
-                className="flex-row items-center mb-4 bg-white rounded-xl p-3"
-                activeOpacity={0.9}
-              >
-                <Image
-                  source={{ uri: event.coverImage }}
-                  className="w-20 h-20 rounded-lg"
-                  resizeMode="cover"
-                />
-                <View className="flex-1 ml-3">
-                  <Text className="text-base font-bold text-brand-text mb-1">{event.title}</Text>
-                  <View className="flex-row items-center">
-                    <Ionicons name="calendar-outline" size={14} color="#9d917c" />
-                    <Text className="text-sm text-gray-600 ml-1">{formatDate(event.date)}</Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9d917c" />
-              </TouchableOpacity>
+              />
             ))}
-          </View>
-        </Container>
+          </ScrollView>
+          <LinearGradient
+            colors={['rgba(	242, 220, 194,0)', 'rgba(	242, 220, 194,0.5)', 'rgba(	242, 220, 194,1)']}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
+              pointerEvents: 'none',
+            }}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

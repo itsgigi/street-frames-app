@@ -16,9 +16,19 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "buildConfiguration": "Release"
+      }
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "luigidiloreto.dev@gmail.com",
+        "ascAppId": "6762150521",
+        "appleTeamId": "V52NK44VDP"
+      }
+    }
   }
 }
