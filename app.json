@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.itsgigiagain.streetframe",
+      "bundleIdentifier": "com.daysofmilanluigidev.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
