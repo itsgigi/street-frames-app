@@ -1,5 +1,7 @@
 import {getApps, initializeApp} from "@firebase/app";
-import {getAuth} from "@firebase/auth";
+import {initializeAuth, getReactNativePersistence, getAuth} from "@firebase/auth";
+import {getFirestore} from "@firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -11,5 +13,12 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+const isFirstInit = getApps().length === 0;
+const app = isFirstInit ? initializeApp(firebaseConfig) : getApps()[0];
+
+// initializeAuth must only be called once; on hot reloads the app already exists
+export const auth = isFirstInit
+  ? initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) })
+  : getAuth(app);
+
+export const db = getFirestore(app);

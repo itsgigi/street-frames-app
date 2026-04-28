@@ -1,31 +1,39 @@
 import React, { useState } from 'react';
 import {
-  ScrollView, View, Text, Image, TouchableOpacity, Pressable, Dimensions,
+  ScrollView, View, Text, Image, TouchableOpacity, Pressable, Dimensions, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { mockPhotos, pastEvents } from '@/services/mockData';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
+import { useAuth } from '@/contexts/authContext';
 import { fonts, sf } from '@/constants/theme';
 
 const SCREEN_W = Dimensions.get('window').width;
-const TILE = (SCREEN_W - 32 - 4) / 3; // 3 columns, 16px padding each side, 4px gaps
+const TILE = (SCREEN_W - 32 - 4) / 3;
 
-const MOCK_USER = {
-  name: 'Marco Rossi',
-  handle: '@marco.frames',
-  avatar: 'https://i.pravatar.cc/150?img=1',
-  bio: 'Street photographer · Milan 📸 · Chasing golden light through Navigli.',
-  photos: 42,
-  events: 17,
-  followers: 284,
-};
+const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<'featured' | 'events'>('featured');
   const { logout } = useAuthMethods();
+  const { userProfile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={sf.orange} />
+      </SafeAreaView>
+    );
+  }
+
+  const displayName = userProfile?.name ?? '';
+  const displayHandle = userProfile?.handle ? `@${userProfile.handle}` : '';
+  const displayBio = userProfile?.biography ?? '';
+  const displayAvatar = userProfile?.profilePhoto || PLACEHOLDER_AVATAR;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>
@@ -49,37 +57,37 @@ export default function ProfileScreen() {
 
         {/* ── Avatar + name ── */}
         <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 20 }}>
-          {/* Avatar with orange ring */}
           <View style={{
             width: 96, height: 96, borderRadius: 48,
             borderWidth: 3, borderColor: sf.orange,
             padding: 3, marginBottom: 14,
           }}>
             <Image
-              source={{ uri: MOCK_USER.avatar }}
+              source={{ uri: displayAvatar }}
               style={{ width: '100%', height: '100%', borderRadius: 44 }}
             />
           </View>
 
           <Text style={{ fontSize: 22, fontWeight: '700', color: sf.black, marginBottom: 2, fontFamily: fonts.heading }}>
-            {MOCK_USER.name}
+            {displayName}
           </Text>
           <Text style={{ fontSize: 13, color: sf.grayDark, marginBottom: 10 }}>
-            {MOCK_USER.handle}
+            {displayHandle}
           </Text>
-          <Text style={{
-            fontSize: 13, color: sf.grayDark, textAlign: 'center',
-            lineHeight: 20, paddingHorizontal: 40, marginBottom: 20,
-          }}>
-            {MOCK_USER.bio}
-          </Text>
+          {displayBio.length > 0 && (
+            <Text style={{
+              fontSize: 13, color: sf.grayDark, textAlign: 'center',
+              lineHeight: 20, paddingHorizontal: 40, marginBottom: 20,
+            }}>
+              {displayBio}
+            </Text>
+          )}
 
           {/* Stats row */}
           <View style={{ flexDirection: 'row', gap: 36, marginBottom: 20 }}>
             {[
-              { label: 'Photos', value: MOCK_USER.photos },
-              { label: 'Events', value: MOCK_USER.events },
-              { label: 'Followers', value: MOCK_USER.followers },
+              { label: 'Photos', value: mockPhotos.length },
+              { label: 'Events', value: pastEvents.length },
             ].map(({ label, value }) => (
               <View key={label} style={{ alignItems: 'center' }}>
                 <Text style={{ fontSize: 20, fontWeight: '700', color: sf.black }}>{value}</Text>
@@ -91,6 +99,7 @@ export default function ProfileScreen() {
           {/* Action buttons */}
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity
+              onPress={() => router.push('/edit-profile')}
               style={{
                 backgroundColor: sf.orange,
                 paddingHorizontal: 28, paddingVertical: 12,
@@ -154,7 +163,7 @@ export default function ProfileScreen() {
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,
             shadowRadius: 2,
-            elevation: 2
+            elevation: 2,
           }}>
             {mockPhotos.map((photo) => (
               <TouchableOpacity
@@ -190,7 +199,8 @@ export default function ProfileScreen() {
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.4,
             shadowRadius: 5,
-            elevation: 2, }}>
+            elevation: 2,
+          }}>
             {pastEvents.map((event) => (
               <TouchableOpacity
                 key={event.id}

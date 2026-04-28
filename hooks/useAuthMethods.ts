@@ -1,18 +1,23 @@
-import {router} from 'expo-router';
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
-import {auth} from "@/services/firebaseConfig";
+import { router } from 'expo-router';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from "@/services/firebaseConfig";
+import { createUserProfile } from "@/services/userService";
 
 export function useAuthMethods() {
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, handle: string, name: string, profilePhoto = '') => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log('User created:', userCredential.user.email);
-    router.replace('/login');
+    await createUserProfile(userCredential.user.uid, {
+      name,
+      handle,
+      biography: '',
+      profilePhoto,
+    });
+    router.replace('/');
   };
 
   const signIn = async (email: string, password: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('User signed in:', userCredential.user.email);
+    await signInWithEmailAndPassword(auth, email, password);
     router.replace('/');
   };
 

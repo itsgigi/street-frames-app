@@ -1,30 +1,75 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, ActivityIndicator } from 'react-native';
 import { FirebaseError } from 'firebase/app';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
+import { imageUriToBase64 } from '@/services/storageService';
+import { sf } from '@/constants/theme';
+
+const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { signIn, signUp } = useAuthMethods();
 
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please allow access to your photo library in Settings.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setLocalImageUri(result.assets[0].uri);
+    }
+  };
+
   const handleSubmit = async () => {
     setError(null);
 
-    if (!isLogin && password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    if (!isLogin) {
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      if (!name.trim()) {
+        setError('Please enter your name.');
+        return;
+      }
+      if (!handle.trim()) {
+        setError('Please enter a handle.');
+        return;
+      }
+      if (!/^[a-z0-9._]+$/.test(handle.trim())) {
+        setError('Handle can only contain lowercase letters, numbers, dots, and underscores.');
+        return;
+      }
     }
 
+    setSubmitting(true);
     try {
       if (isLogin) {
         await signIn(email, password);
       } else {
-        await signUp(email, password);
+        let profilePhoto = '';
+        if (localImageUri) {
+          profilePhoto = await imageUriToBase64(localImageUri);
+        }
+        await signUp(email, password, handle.trim().toLowerCase(), name.trim(), profilePhoto);
       }
     } catch (err) {
       if (err instanceof FirebaseError) {
@@ -49,6 +94,8 @@ export default function LoginScreen() {
       } else {
         setError('Si è verificato un errore. Riprova.');
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -57,11 +104,64 @@ export default function LoginScreen() {
     setError(null);
     setPassword('');
     setConfirmPassword('');
+    setName('');
+    setHandle('');
+    setLocalImageUri(null);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+
+      {/* Avatar picker — sign-up only */}
+      {!isLogin && (
+        <View style={{ alignItems: 'center', marginBottom: 24 }}>
+          <TouchableOpacity onPress={handlePickImage} activeOpacity={0.8}>
+            <View style={{
+              width: 88, height: 88, borderRadius: 44,
+              borderWidth: 2.5, borderColor: sf.orange,
+              padding: 3, marginBottom: 8,
+            }}>
+              <Image
+                source={{ uri: localImageUri ?? PLACEHOLDER_AVATAR }}
+                style={{ width: '100%', height: '100%', borderRadius: 40 }}
+              />
+              <View style={{
+                position: 'absolute', bottom: 0, right: 0,
+                width: 26, height: 26, borderRadius: 13,
+                backgroundColor: sf.orange, alignItems: 'center', justifyContent: 'center',
+                borderWidth: 2, borderColor: '#fff',
+              }}>
+                <Text style={{ color: '#fff', fontSize: 13, lineHeight: 15 }}>+</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          <Text style={{ fontSize: 12, color: '#888' }}>
+            {localImageUri ? 'Tap to change photo' : 'Add profile photo (optional)'}
+          </Text>
+        </View>
+      )}
+
+      {!isLogin && (
+        <TextInput
+          style={styles.input}
+          placeholder="Full Name"
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="words"
+        />
+      )}
+
+      {!isLogin && (
+        <TextInput
+          style={styles.input}
+          placeholder="Handle (e.g. marco.frames)"
+          value={handle}
+          onChangeText={setHandle}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      )}
 
       <TextInput
         style={styles.input}
@@ -92,8 +192,11 @@ export default function LoginScreen() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+      <TouchableOpacity style={[styles.button, submitting && { opacity: 0.7 }]} onPress={handleSubmit} disabled={submitting}>
+        {submitting
+          ? <ActivityIndicator color="#fff" />
+          : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+        }
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleToggle}>

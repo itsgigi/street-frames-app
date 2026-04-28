@@ -5,6 +5,15 @@ export interface Stop {
   longitude: number;
 }
 
+export interface UserProfile {
+  id: string;        // Firebase Auth UID
+  name: string;
+  handle: string;    // set once on account creation, never editable
+  biography: string;
+  profilePhoto: string;
+}
+
+// Used for mock event participants (walk attendees)
 export interface User {
   id: string;
   name: string;

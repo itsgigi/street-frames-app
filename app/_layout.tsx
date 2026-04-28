@@ -40,6 +40,8 @@ const InternalLayout = () => {
       {user ? (
         <>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="edit-profile" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="user/[uid]" options={{ headerShown: false }} />
         </>
       ) : (
         <Stack.Screen name="login" options={{ title: 'Login' }} />
