@@ -27,6 +27,17 @@ export interface Photo {
   imageUrl: string;
 }
 
+export interface Walk {
+  id: string;
+  title: string;
+  coverImage: string;
+  location: string;
+  description: string;
+  date: string;
+  stops: Stop[];
+  participantUids: string[];
+}
+
 export interface Event {
   id: string;
   title: string;

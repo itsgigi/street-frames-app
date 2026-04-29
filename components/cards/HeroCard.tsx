@@ -87,11 +87,20 @@ export function HeroCard({
 
           <View style={styles.avatarRow}>
             {visibleAvatars.map((p, i) => (
-              <Image
-                key={i}
-                source={{ uri: p.avatar ?? `https://i.pravatar.cc/150?img=${i + 1}` }}
-                style={[styles.avatar, i > 0 && styles.avatarOffset]}
-              />
+              p.avatar ? (
+                <Image
+                  key={i}
+                  source={{ uri: p.avatar }}
+                  style={[styles.avatar, i > 0 && styles.avatarOffset]}
+                />
+              ) : (
+                <View
+                  key={i}
+                  style={[styles.avatar, i > 0 && styles.avatarOffset, { backgroundColor: sf.grayLight, alignItems: 'center', justifyContent: 'center' }]}
+                >
+                  <Ionicons name="person" size={14} color={sf.grayDark} />
+                </View>
+              )
             ))}
             {overflowCount > 0 && (
               <View style={[styles.avatar, styles.avatarOffset, styles.avatarOverflow]}>

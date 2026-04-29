@@ -1,12 +1,21 @@
 import React from 'react';
 import {
-  ScrollView, View, Text, Image, TouchableOpacity,
+  ScrollView, View, Text, Image, TouchableOpacity, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import MapView, { Marker } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
+
+let MapView: any = null;
+let Marker: any = null;
+try {
+  if (Platform.OS !== 'web') {
+    const maps = require('react-native-maps');
+    MapView = maps.default;
+    Marker = maps.Marker;
+  }
+} catch { /* not available in Expo Go */ }
 import { nextEvent, pastEvents } from '@/services/mockData';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Event } from '@/types';
