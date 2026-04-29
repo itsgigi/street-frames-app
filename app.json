@@ -2,7 +2,7 @@
   "expo": {
     "name": "street-frame",
     "slug": "street-frame",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/sf_logo.jpg",
     "scheme": "streetframe",
@@ -11,8 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.itsgigiagain.streetframe",
+      "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Street Frame uses your photo library to set your profile picture."
       },
       "googleServicesFile": "./GoogleService-Info.plist"
     },
@@ -51,12 +53,6 @@
           "dark": {
             "backgroundColor": "#231a13"
           }
-        }
-      ],
-      [
-        "react-native-maps",
-        {
-          "googleMapsApiKey": ""
         }
       ]
     ],
