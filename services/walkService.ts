@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, updateDoc, onSnapshot,
-  query, orderBy, limit, arrayUnion, arrayRemove, Timestamp,
+  query, orderBy, limit, where, arrayUnion, arrayRemove, Timestamp,
 } from "@firebase/firestore";
 import { db } from "./firebaseConfig";
 import { Walk, Stop } from "@/types";
@@ -70,5 +70,40 @@ export async function joinWalk(walkId: string, uid: string): Promise<void> {
 export async function leaveWalk(walkId: string, uid: string): Promise<void> {
   await updateDoc(doc(db, COLLECTION, walkId), {
     participantUIDs: arrayRemove(uid),
+  });
+}
+
+// Real-time subscription to all walks a specific user has joined
+// Note: no orderBy here to avoid requiring a composite Firestore index;
+// results are sorted client-side instead.
+export function subscribeToUserWalks(
+  uid: string,
+  callback: (walks: Walk[]) => void
+): () => void {
+  const q = query(
+    collection(db, COLLECTION),
+    where('participantUIDs', 'array-contains', uid)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const walks = snapshot.docs
+      .map((d) => docToWalk(d.id, d.data()))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    callback(walks);
+  });
+}
+
+// Real-time subscription to all past walks (date < now), sorted newest-first.
+// Uses only orderBy (no where) to avoid requiring a composite index.
+export function subscribeToPastWalks(
+  callback: (walks: Walk[]) => void
+): () => void {
+  const q = query(collection(db, COLLECTION), orderBy('date', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const now = new Date();
+    callback(
+      snapshot.docs
+        .map((d) => docToWalk(d.id, d.data()))
+        .filter((w) => new Date(w.date) < now)
+    );
   });
 }

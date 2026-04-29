@@ -123,7 +123,7 @@ function WalkCard({ event, isUpcoming, onPress }: {
         }}>
           {/* Col 1 – Map */}
           <View style={{ flex: 1, borderRadius: 12, overflow: 'hidden' }}>
-            {hasMap ? (
+            {hasMap && MapView ? (
               <MapView
                 style={{ flex: 1 }}
                 scrollEnabled={false}

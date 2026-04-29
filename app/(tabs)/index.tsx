@@ -3,8 +3,7 @@ import { ScrollView, View, Text, Image, Pressable, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { pastEvents } from '@/services/mockData';
-import { subscribeToLatestWalk } from '@/services/walkService';
+import { subscribeToLatestWalk, subscribeToPastWalks } from '@/services/walkService';
 import { getUserProfiles } from '@/services/userService';
 import { HeroCard } from '@/components/cards/HeroCard';
 import { PastCard } from '@/components/cards/PastCard';
@@ -20,10 +19,11 @@ export default function HomeScreen() {
   const { userProfile } = useAuth();
   const [latestWalk, setLatestWalk] = useState<Walk | null | undefined>(undefined);
   const [previewProfiles, setPreviewProfiles] = useState<UserProfile[]>([]);
+  const [pastWalks, setPastWalks] = useState<Walk[] | undefined>(undefined);
   const prevUidsKeyRef = useRef('');
 
   useEffect(() => {
-    const unsub = subscribeToLatestWalk((walk) => {
+    const unsubLatest = subscribeToLatestWalk((walk) => {
       setLatestWalk(walk);
 
       const validUids = (walk?.participantUids ?? [])
@@ -40,7 +40,13 @@ export default function HomeScreen() {
         getUserProfiles(validUids).then(setPreviewProfiles);
       }
     });
-    return unsub;
+
+    const unsubPast = subscribeToPastWalks(setPastWalks);
+
+    return () => {
+      unsubLatest();
+      unsubPast();
+    };
   }, []);
 
   const avatarUri = userProfile?.profilePhoto || PLACEHOLDER_AVATAR;
@@ -89,7 +95,6 @@ export default function HomeScreen() {
 
         <View style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 7 }}>
           {latestWalk === undefined ? (
-            // Loading skeleton
             <View style={{
               marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
               height: 500, borderWidth: 12, borderColor: 'white',
@@ -132,34 +137,53 @@ export default function HomeScreen() {
         />
 
         <View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 }}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 50, gap: 12, paddingBottom: 120, marginTop: 2 }}
-          >
-            {pastEvents.map((event) => (
-              <PastCard
-                key={event.id}
-                imageUri={event.coverImage}
-                title={event.title}
-                date={event.date}
-                participants={event.participantsCount}
-                onPress={() => router.push(`/event/${event.id}`)}
+          {pastWalks === undefined ? (
+            // Loading skeleton row
+            <View style={{ height: 220, alignItems: 'center', justifyContent: 'center', paddingBottom: 120 }}>
+              <ActivityIndicator size="small" color={sf.orange} />
+            </View>
+          ) : pastWalks.length === 0 ? (
+            <View style={{
+              marginHorizontal: 20, paddingBottom: 120,
+              height: 120,
+              alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              <Text style={{ color: sf.grayDark, fontSize: 14, fontWeight: '600' }}>No past walks yet</Text>
+              <Text style={{ color: sf.grayMid, fontSize: 12 }}>Completed walks will appear here</Text>
+            </View>
+          ) : (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 }}
+                contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 50, gap: 12, paddingBottom: 120, marginTop: 2 }}
+              >
+                {pastWalks.map((walk) => (
+                  <PastCard
+                    key={walk.id}
+                    imageUri={walk.coverImage}
+                    title={walk.title}
+                    date={walk.date}
+                    participants={walk.participantUids.filter(u => u?.trim().length > 0).length}
+                    onPress={() => router.push(`/event/${walk.id}`)}
+                  />
+                ))}
+              </ScrollView>
+              <LinearGradient
+                colors={['rgba(242, 220, 194,0)', 'rgba(242, 220, 194,0.5)', 'rgba(242, 220, 194,1)']}
+                locations={[0, 0.5, 1]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
+                  pointerEvents: 'none',
+                }}
               />
-            ))}
-          </ScrollView>
-          <LinearGradient
-            colors={['rgba(242, 220, 194,0)', 'rgba(242, 220, 194,0.5)', 'rgba(242, 220, 194,1)']}
-            locations={[0, 0.5, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: 'absolute', right: 0, top: 0, bottom: 0, width: 60,
-              pointerEvents: 'none',
-            }}
-          />
+            </>
+          )}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );

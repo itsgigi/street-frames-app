@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, Image, ScrollView, Pressable, ActivityIndicator,
+  View, Text, Image, ScrollView, Pressable, ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -68,6 +68,17 @@ export default function UserProfileScreen() {
         left={
           <Pressable onPress={() => router.back()} hitSlop={12}>
             <Ionicons name="chevron-back" size={24} color={sf.black} />
+          </Pressable>
+        }
+        right={
+          <Pressable
+            hitSlop={12}
+            onPress={() => Share.share({
+              message: `Check out ${profile.name} (@${profile.handle}) on Street Frames! 📷`,
+              title: profile.name,
+            })}
+          >
+            <Ionicons name="share-outline" size={22} color={sf.black} />
           </Pressable>
         }
       />

@@ -11,10 +11,11 @@ interface EventHeaderProps {
   location: string;
   coverImage: string;
   onBack: () => void;
+  onShare?: () => void;
 }
 
 export const EventHeader: React.FC<EventHeaderProps> = ({
-  title, date, location, coverImage, onBack,
+  title, date, location, coverImage, onBack, onShare,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -59,6 +60,27 @@ export const EventHeader: React.FC<EventHeaderProps> = ({
       >
         <Ionicons name="chevron-back" size={22} color={sf.cream} />
       </TouchableOpacity>
+
+      {/* Share button */}
+      {onShare && (
+        <TouchableOpacity
+          onPress={onShare}
+          activeOpacity={0.8}
+          style={{
+            position: 'absolute',
+            top: insets.top + 12,
+            right: 16,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            backgroundColor: 'rgba(33,34,38,0.55)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="share-outline" size={20} color={sf.cream} />
+        </TouchableOpacity>
+      )}
 
       {/* Text overlay */}
       <View style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Share } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EventHeader } from '@/components/features/EventHeader';
 import { EventDescription } from '@/components/features/EventDescription';
@@ -47,6 +48,13 @@ export default function EventDetailsScreen() {
     return unsub;
   }, [id]);
 
+  const makeShareMessage = (title: string, date: string, location: string) => {
+    const dateStr = new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric',
+    });
+    return `Join me at "${title}" on ${dateStr} in ${location}! 📷 #StreetFrames`;
+  };
+
   const handleJoinLeave = async () => {
     if (!user || !walk) return;
     setJoining(true);
@@ -74,6 +82,10 @@ export default function EventDetailsScreen() {
             location={mockEvent.location}
             coverImage={mockEvent.coverImage}
             onBack={() => router.back()}
+            onShare={() => Share.share({
+              message: makeShareMessage(mockEvent.title, mockEvent.date, mockEvent.location),
+              title: mockEvent.title,
+            })}
           />
           <View style={{ paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
             <View style={shadow}>
@@ -114,8 +126,9 @@ export default function EventDetailsScreen() {
   }
 
   // ── Live Firestore walk ──────────────────────────────────────────────────
-  const isUpcoming = new Date(walk.date) > new Date();
-  const joined = !!user && walk.participantUids.includes(user.uid);
+  const isPast  = new Date(walk.date) <= new Date();
+  const isUpcoming = !isPast;
+  const joined  = !!user && walk.participantUids.includes(user.uid);
 
   return (
     <View style={{ flex: 1, backgroundColor: sf.cream }}>
@@ -126,6 +139,10 @@ export default function EventDetailsScreen() {
           location={walk.location}
           coverImage={walk.coverImage}
           onBack={() => router.back()}
+          onShare={() => Share.share({
+            message: makeShareMessage(walk.title, walk.date, walk.location),
+            title: walk.title,
+          })}
         />
         <View style={{ paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
           <View style={shadow}>
@@ -140,11 +157,12 @@ export default function EventDetailsScreen() {
         </View>
       </ScrollView>
 
-      {isUpcoming && (
+      {(isUpcoming || joined) && (
         <JoinBar
           onPress={handleJoinLeave}
           joining={joining}
           joined={joined}
+          isPast={isPast}
           insetBottom={insets.bottom}
         />
       )}
@@ -154,12 +172,49 @@ export default function EventDetailsScreen() {
 
 /* ── Join / Leave bar ─────────────────────────────────────────────────────── */
 
-function JoinBar({ onPress, joining, joined, insetBottom }: {
+function JoinBar({ onPress, joining, joined, isPast, insetBottom }: {
   onPress: () => void;
   joining: boolean;
   joined: boolean;
+  isPast: boolean;
   insetBottom: number;
 }) {
+  // Past event + already joined → read-only "attended" badge
+  if (isPast && joined) {
+    return (
+      <View style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        paddingHorizontal: 20,
+        paddingBottom: insetBottom + 12,
+        paddingTop: 12,
+        backgroundColor: sf.cream,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(33,34,38,0.08)',
+      }}>
+        <View style={{
+          backgroundColor: sf.white,
+          borderRadius: 100,
+          paddingVertical: 16,
+          alignItems: 'center',
+          borderWidth: 2,
+          borderColor: sf.grayLight,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 8,
+        }}>
+          <Ionicons name="checkmark-circle" size={18} color={sf.orange} />
+          <Text style={{ fontSize: 15, fontWeight: '700', color: sf.grayDark, letterSpacing: 0.3 }}>
+            You attended this walk
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Past event + not joined → show nothing
+  if (isPast) return null;
+
+  // Upcoming event → join / leave
   return (
     <View style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
