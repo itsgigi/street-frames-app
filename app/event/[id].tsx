@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Share } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Share, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { EventHeader } from '@/components/features/EventHeader';
 import { EventDescription } from '@/components/features/EventDescription';
 import { EventMap } from '@/components/features/EventMap';
 import { ParticipantsList } from '@/components/features/ParticipantsList';
 import { getEventById } from '@/services/mockData';
+import { uploadWalkPhoto } from '@/services/photoService';
 import { subscribeToWalkById, joinWalk, leaveWalk } from '@/services/walkService';
 import { getUserProfiles } from '@/services/userService';
 import { useAuth } from '@/contexts/authContext';
@@ -27,6 +29,7 @@ export default function EventDetailsScreen() {
   const [walk, setWalk] = useState<Walk | null | undefined>(mockEvent ? null : undefined);
   const [participants, setParticipants] = useState<UserProfile[]>([]);
   const [joining, setJoining] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // Track previous uid list to avoid redundant fetches
   const prevUidsRef = useRef<string>('');
@@ -70,6 +73,43 @@ export default function EventDetailsScreen() {
     }
   };
 
+  const handleUploadImage = async (walkId: string) => {
+
+    if (!user) {
+      Alert.alert('Sign in required', 'Please sign in to upload an image.');
+      return;
+    }
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please allow access to your photo library in Settings.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      quality: 0.85,
+    });
+
+    if (result.canceled) return;
+
+    setUploading(true);
+    try {
+      await uploadWalkPhoto({
+        localUri: result.assets[0].uri,
+        userId: user.uid,
+        walkId,
+        tags: [],
+      });
+      Alert.alert('Uploaded', 'Your image was uploaded successfully.');
+    } catch {
+      Alert.alert('Upload failed', 'Unable to upload right now. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ── Mock event (past walks) ──────────────────────────────────────────────
   if (mockEvent) {
     const isUpcoming = new Date(mockEvent.date) > new Date();
@@ -99,7 +139,12 @@ export default function EventDetailsScreen() {
             </View>
           </View>
         </ScrollView>
-        {isUpcoming && <JoinBar onPress={() => {}} joining={false} joined={false} insetBottom={insets.bottom} />}
+        {isUpcoming && <JoinBar onPress={() => {}} joining={false} isPast={false} joined={false} insetBottom={insets.bottom} />}
+        <UploadBar
+          onPress={() => handleUploadImage(mockEvent.id)}
+          uploading={uploading}
+          insetBottom={insets.bottom}
+        />
       </View>
     );
   }
@@ -127,7 +172,6 @@ export default function EventDetailsScreen() {
 
   // ── Live Firestore walk ──────────────────────────────────────────────────
   const isPast  = new Date(walk.date) <= new Date();
-  const isUpcoming = !isPast;
   const joined  = !!user && walk.participantUids.includes(user.uid);
 
   return (
@@ -157,15 +201,63 @@ export default function EventDetailsScreen() {
         </View>
       </ScrollView>
 
-      {(isUpcoming || joined) && (
+      {isPast ? (
+        <UploadBar
+          onPress={() => handleUploadImage(walk.id)}
+          uploading={uploading}
+          insetBottom={insets.bottom}
+        />
+      ) : (
         <JoinBar
           onPress={handleJoinLeave}
           joining={joining}
           joined={joined}
-          isPast={isPast}
+          isPast={false}
           insetBottom={insets.bottom}
         />
       )}
+    </View>
+  );
+}
+
+function UploadBar({ onPress, uploading, insetBottom }: {
+  onPress: () => void;
+  uploading: boolean;
+  insetBottom: number;
+}) {
+  return (
+    <View style={{
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      paddingHorizontal: 20,
+      paddingBottom: insetBottom + 12,
+      paddingTop: 12,
+      backgroundColor: sf.cream,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(33,34,38,0.08)',
+    }}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={uploading}
+        activeOpacity={0.85}
+        style={{
+          backgroundColor: sf.orange,
+          borderRadius: 100,
+          paddingVertical: 16,
+          alignItems: 'center',
+        }}
+      >
+        {uploading ? (
+          <ActivityIndicator color={sf.cream} />
+        ) : (
+          <Text style={{
+            fontSize: 15, fontWeight: '700',
+            color: sf.cream,
+            letterSpacing: 0.3,
+          }}>
+            Upload an image
+          </Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 }

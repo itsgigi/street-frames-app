@@ -1,34 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ScrollView, View, Text, Image, TouchableOpacity, Dimensions,
+  ScrollView, View, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { mockPhotos } from '@/services/mockData';
+import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { GalleryPhoto } from '@/types';
 import { sf } from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
 
 const CATEGORIES = [
+  { key: 'all',             label: 'All' },
   { key: 'photojournalism', label: 'Street' },
   { key: 'vintage',         label: 'Vintage' },
   { key: 'stilllife',       label: 'Still Life' },
   { key: 'architecture',    label: 'Architecture' },
   { key: 'nightlife',       label: 'Night' },
 ];
-
-const GALLERY_PHOTOS = [
-  ...mockPhotos,
-  { id: 'photo-7', imageUrl: 'https://images.unsplash.com/photo-1533158388-350df81cd1ce?w=400' },
-  { id: 'photo-8', imageUrl: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400' },
-  { id: 'photo-9', imageUrl: 'https://images.unsplash.com/photo-1445307806294-bff7f67ff225?w=400' },
-].map((p, i) => ({
-  ...p,
-  likes:   [172, 88, 45, 210, 67, 130, 55, 93, 38][i] ?? 10,
-  starred: [true, false, true, false, false, true, false, true, false][i] ?? false,
-}));
 
 // ── Dial selector ────────────────────────────────────────────────────────────
 function DialSelector({
@@ -95,8 +86,33 @@ function DialSelector({
 
 // ── Screen ───────────────────────────────────────────────────────────────────
 export default function GalleryScreen() {
-  const [activeCategory, setActiveCategory] = useState('photojournalism');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [sortOpen, setSortOpen] = useState(false);
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadPhotos = async () => {
+      setLoading(true);
+      try {
+        const data = activeCategory === 'all'
+          ? await getGlobalGallery(50)
+          : await getGalleryByTag(activeCategory, 50);
+        if (mounted) setPhotos(data);
+      } catch {
+        if (mounted) setPhotos([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadPhotos();
+    return () => {
+      mounted = false;
+    };
+  }, [activeCategory]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>
@@ -137,44 +153,38 @@ export default function GalleryScreen() {
 
       {/* ── Photo Grid ── */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={{
-          flexDirection: 'row', flexWrap: 'wrap',
-          paddingHorizontal: 20, gap: 8,
-          margin: 2,
-          shadowColor: sf.black,
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.5,
-          shadowRadius: 2,
-        }}>
-          {GALLERY_PHOTOS.map((photo) => (
-            <TouchableOpacity
-              key={photo.id}
-              activeOpacity={0.88}
-              style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 28, overflow: 'hidden', borderColor: sf.grayLight, borderWidth: 6 }}
-            >
-              <Image
-                source={{ uri: photo.imageUrl }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode="cover"
-              />
-              <View style={{
-                position: 'absolute', top: 10, right: 10,
-                flexDirection: 'row', alignItems: 'center', gap: 3,
-                backgroundColor: 'rgba(33,34,38,0.70)',
-                paddingHorizontal: 8, paddingVertical: 4,
-              }}>
-                <Ionicons
-                  name={photo.starred ? 'star' : 'star-outline'}
-                  size={11}
-                  color={photo.starred ? '#D49B37' : sf.cream}
+        {loading ? (
+          <View style={{ paddingTop: 40, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={sf.orange} />
+          </View>
+        ) : (
+          <View style={{
+            flexDirection: 'row', flexWrap: 'wrap',
+            paddingHorizontal: 20, gap: 8,
+            margin: 2,
+            shadowColor: sf.black,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.5,
+            shadowRadius: 2,
+          }}>
+            {photos.map((photo) => (
+              <TouchableOpacity
+                key={photo.id}
+                activeOpacity={0.88}
+                style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 28, overflow: 'hidden', borderColor: sf.grayLight, borderWidth: 6 }}
+              >
+                <Image
+                  source={{ uri: photo.imageUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
                 />
-                <Text style={{ fontSize: 11, fontWeight: '600', color: sf.cream }}>
-                  {photo.likes}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+            {photos.length === 0 && (
+              <Text style={{ color: sf.grayDark, marginTop: 6 }}>No photos yet.</Text>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

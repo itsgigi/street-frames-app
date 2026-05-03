@@ -27,6 +27,13 @@ export interface Photo {
   imageUrl: string;
 }
 
+export interface GalleryPhoto extends Photo {
+  userId: string;
+  walkId: string;
+  createdAt?: string;
+  tags: string[];
+}
+
 export interface Walk {
   id: string;
   title: string;
