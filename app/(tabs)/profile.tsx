@@ -59,11 +59,11 @@ export default function ProfileScreen() {
       {/* ── Header ── */}
       <ScreenHeader
         title="PROFILE"
-        right={
+        /* right={
           <Pressable hitSlop={12}>
             <Ionicons name="ellipsis-horizontal" size={24} color={sf.black} />
           </Pressable>
-        }
+        } */
       />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>

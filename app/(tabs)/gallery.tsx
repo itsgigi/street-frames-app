@@ -126,16 +126,6 @@ export default function GalleryScreen() {
       {/* ── Header ── */}
       <ScreenHeader
         title="GALLERY"
-        right={
-          <View style={{ flexDirection: 'row', gap: 16 }}>
-            <TouchableOpacity hitSlop={12}>
-              <Ionicons name="search-outline" size={24} color={sf.black} />
-            </TouchableOpacity>
-            <TouchableOpacity hitSlop={12}>
-              <Ionicons name="options-outline" size={24} color={sf.black} />
-            </TouchableOpacity>
-          </View>
-        }
       />
 
       <FilterSelector activeCategory={activeCategory} onSelect={setActiveCategory} />
