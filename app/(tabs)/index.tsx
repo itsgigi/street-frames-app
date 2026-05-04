@@ -130,7 +130,7 @@ export default function HomeScreen() {
           title="PAST WALKS"
           style={{ paddingVertical: 0, marginTop: 10, marginBottom: 20 }}
           right={
-            <Pressable hitSlop={8}>
+            <Pressable hitSlop={8} onPress={() => router.push('/walks')}>
               <Text style={{ fontSize: 13, color: sf.orange, fontWeight: '600' }}>See all</Text>
             </Pressable>
           }

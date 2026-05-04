@@ -59,11 +59,6 @@ export default function ProfileScreen() {
       {/* ── Header ── */}
       <ScreenHeader
         title="PROFILE"
-        left={
-          <Pressable hitSlop={12}>
-            <Ionicons name="chevron-back" size={24} color={sf.black} />
-          </Pressable>
-        }
         right={
           <Pressable hitSlop={12}>
             <Ionicons name="ellipsis-horizontal" size={24} color={sf.black} />

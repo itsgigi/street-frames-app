@@ -96,11 +96,14 @@ export async function getWalkGallery(walkId: string): Promise<GalleryPhoto[]> {
   const q = query(
     collection(db, COLLECTION),
     where('walkId', '==', walkId),
-    orderBy('createdAt', 'desc')
   );
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
+  const photos = snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
+  return photos.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0;
+    return b.createdAt.localeCompare(a.createdAt);
+  });
 }
 
 export async function getGlobalGallery(maxItems = 50): Promise<GalleryPhoto[]> {

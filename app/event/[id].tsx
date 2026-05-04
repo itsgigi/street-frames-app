@@ -8,6 +8,7 @@ import { EventHeader } from '@/components/features/EventHeader';
 import { EventDescription } from '@/components/features/EventDescription';
 import { EventMap } from '@/components/features/EventMap';
 import { ParticipantsList } from '@/components/features/ParticipantsList';
+import { WalkGallery } from '@/components/features/WalkGallery';
 import { getEventById } from '@/services/mockData';
 import { uploadWalkPhoto } from '@/services/photoService';
 import { subscribeToWalkById, joinWalk, leaveWalk } from '@/services/walkService';
@@ -30,6 +31,7 @@ export default function EventDetailsScreen() {
   const [participants, setParticipants] = useState<UserProfile[]>([]);
   const [joining, setJoining] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
 
   // Track previous uid list to avoid redundant fetches
   const prevUidsRef = useRef<string>('');
@@ -102,6 +104,7 @@ export default function EventDetailsScreen() {
         walkId,
         tags: [],
       });
+      setUploadCount((c) => c + 1);
       Alert.alert('Uploaded', 'Your image was uploaded successfully.');
     } catch {
       Alert.alert('Upload failed', 'Unable to upload right now. Please try again.');
@@ -132,7 +135,7 @@ export default function EventDetailsScreen() {
               <EventDescription description={mockEvent.description} />
             </View>
             <View style={shadow}>
-              <EventMap stops={mockEvent.stops} />
+              <WalkGallery walkId={mockEvent.id} refreshKey={uploadCount} />
             </View>
             <View style={shadow}>
               <ParticipantsList participants={[]} />
@@ -193,7 +196,7 @@ export default function EventDetailsScreen() {
             <EventDescription description={walk.description} />
           </View>
           <View style={shadow}>
-            <EventMap stops={walk.stops} />
+            {isPast ? <WalkGallery walkId={walk.id} refreshKey={uploadCount} /> : <EventMap stops={walk.stops} />}
           </View>
           <View style={shadow}>
             <ParticipantsList participants={participants} />

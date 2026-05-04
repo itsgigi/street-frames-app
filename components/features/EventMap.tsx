@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Platform, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stop } from '@/types';
-import { fonts, sf } from '@/constants/theme';
+import { sf } from '@/constants/theme';
+import { StopCard, STOP_CARD_W } from '@/components/features/StopCard';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -24,7 +25,7 @@ try {
 const SCREEN_W = Dimensions.get('window').width;
 const H_PAD = 20;
 const CARD_GAP = 10;
-const CARD_W = 180;
+const CARD_W = STOP_CARD_W;
 
 interface EventMapProps {
   stops: Stop[];
@@ -141,55 +142,16 @@ export const EventMap: React.FC<EventMapProps> = ({ stops }) => {
         snapToAlignment="start"
         decelerationRate="fast"
         style={{ position: 'absolute', bottom: 12, left: 0, right: 0 }}
-        contentContainerStyle={{ paddingHorizontal: H_PAD, gap: CARD_GAP }}
+        contentContainerStyle={{ paddingLeft: H_PAD, paddingRight: SCREEN_W - CARD_W - H_PAD, gap: CARD_GAP }}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         renderItem={({ item, index }) => (
-          <StopCard stop={item} index={index} isActive={index === activeIndex} total={stops.length} />
+          <StopCard stop={item} index={index} isActive={index === activeIndex} />
         )}
       />
     </View>
   );
 };
-
-/* ─── Stop Card ─── */
-
-function StopCard({ stop, index, isActive, total }: {
-  stop: Stop; index: number; isActive: boolean; total: number;
-}) {
-  return (
-    <View style={{
-      width: CARD_W,
-      backgroundColor: isActive ? 'rgba(33,34,38,0.92)' : 'rgba(46,47,52,0.82)',
-      borderRadius: 14,
-      padding: 11,
-      borderWidth: 1,
-      borderColor: isActive ? sf.orange : 'rgba(255,255,255,0.08)',
-    }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <View style={{
-          width: 24, height: 24, borderRadius: 12,
-          backgroundColor: isActive ? sf.orange : 'rgba(255,255,255,0.1)',
-          alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Text style={{ color: isActive ? '#fff' : sf.grayDark, fontWeight: '700', fontSize: 11 }}>
-            {index + 1}
-          </Text>
-        </View>
-        <Text style={{ fontSize: 14, fontWeight: '700', color: sf.cream, flex: 1, fontFamily: fonts.heading }} numberOfLines={1}>
-          {stop.name}
-        </Text>
-      </View>
-
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <Ionicons name="location-outline" size={11} color={isActive ? sf.orange : sf.grayDark} />
-        <Text style={{ fontSize: 10, color: isActive ? sf.orange : sf.grayDark }}>
-          {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
-        </Text>
-      </View>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   marker: {

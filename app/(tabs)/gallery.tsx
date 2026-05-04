@@ -6,8 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
+import { getUserProfiles } from '@/services/userService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { GalleryPhoto } from '@/types';
+import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
+import { GalleryPhoto, UserProfile } from '@/types';
 import { sf } from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
@@ -22,7 +24,7 @@ const CATEGORIES = [
 ];
 
 // ── Dial selector ────────────────────────────────────────────────────────────
-function DialSelector({
+function FilterSelector({
   activeCategory,
   onSelect,
 }: {
@@ -87,9 +89,10 @@ function DialSelector({
 // ── Screen ───────────────────────────────────────────────────────────────────
 export default function GalleryScreen() {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [sortOpen, setSortOpen] = useState(false);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [profileMap, setProfileMap] = useState<Map<string, UserProfile>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -100,7 +103,12 @@ export default function GalleryScreen() {
         const data = activeCategory === 'all'
           ? await getGlobalGallery(50)
           : await getGalleryByTag(activeCategory, 50);
-        if (mounted) setPhotos(data);
+        if (!mounted) return;
+        setPhotos(data);
+
+        const uids = [...new Set(data.map((p) => p.userId))];
+        const profiles = await getUserProfiles(uids);
+        if (mounted) setProfileMap(new Map(profiles.map((p) => [p.id, p])));
       } catch {
         if (mounted) setPhotos([]);
       } finally {
@@ -109,9 +117,7 @@ export default function GalleryScreen() {
     };
 
     loadPhotos();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [activeCategory]);
 
   return (
@@ -132,24 +138,7 @@ export default function GalleryScreen() {
         }
       />
 
-      {/* ── Dial selector ── */}
-      <DialSelector activeCategory={activeCategory} onSelect={setActiveCategory} />
-
-      {/* ── Popular section header ── */}
-      <ScreenHeader
-        title="POPULAR"
-        style={{ paddingVertical: 0, marginBottom: 12 }}
-        right={
-          <TouchableOpacity
-            onPress={() => setSortOpen(!sortOpen)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-          >
-            <Text style={{ fontSize: 12, color: sf.grayDark }}>Sort by </Text>
-            <Text style={{ fontSize: 12, color: sf.orange, fontWeight: '600' }}>Latest</Text>
-            <Ionicons name="chevron-down" size={14} color={sf.orange} />
-          </TouchableOpacity>
-        }
-      />
+      <FilterSelector activeCategory={activeCategory} onSelect={setActiveCategory} />
 
       {/* ── Photo Grid ── */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
@@ -167,25 +156,48 @@ export default function GalleryScreen() {
             shadowOpacity: 0.5,
             shadowRadius: 2,
           }}>
-            {photos.map((photo) => (
-              <TouchableOpacity
-                key={photo.id}
-                activeOpacity={0.88}
-                style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 28, overflow: 'hidden', borderColor: sf.grayLight, borderWidth: 6 }}
-              >
-                <Image
-                  source={{ uri: photo.imageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
+            {photos.map((photo, index) => {
+              const uploader = profileMap.get(photo.userId);
+              return (
+                <TouchableOpacity
+                  key={photo.id}
+                  activeOpacity={0.88}
+                  onPress={() => setSelectedIndex(index)}
+                  style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 28, overflow: 'hidden', borderColor: sf.grayLight, borderWidth: 6 }}
+                >
+                  <Image
+                    source={{ uri: photo.imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                  <View style={{ position: 'absolute', bottom: 8, right: 8 }}>
+                    {uploader?.profilePhoto ? (
+                      <Image
+                        source={{ uri: uploader.profilePhoto }}
+                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.white }}
+                      />
+                    ) : (
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.white, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="person" size={13} color={sf.white} />
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
             {photos.length === 0 && (
               <Text style={{ color: sf.grayDark, marginTop: 6 }}>No photos yet.</Text>
             )}
           </View>
         )}
       </ScrollView>
+      <PhotoLightbox
+        photos={photos}
+        selectedIndex={selectedIndex}
+        onClose={() => setSelectedIndex(null)}
+        onPrev={() => setSelectedIndex((i) => (i !== null ? i - 1 : i))}
+        onNext={() => setSelectedIndex((i) => (i !== null ? i + 1 : i))}
+      />
     </SafeAreaView>
   );
 }

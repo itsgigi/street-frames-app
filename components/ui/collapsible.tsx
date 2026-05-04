@@ -21,7 +21,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
           name="chevron.right"
           size={18}
           weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
+          color={theme === 'light' ? Colors.main : Colors.black}
           style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
         />
 
