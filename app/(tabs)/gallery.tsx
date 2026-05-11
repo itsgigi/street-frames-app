@@ -164,11 +164,11 @@ export default function GalleryScreen() {
                     {uploader?.profilePhoto ? (
                       <Image
                         source={{ uri: uploader.profilePhoto }}
-                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.white }}
+                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.creamLight }}
                       />
                     ) : (
-                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.white, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="person" size={13} color={sf.white} />
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.creamLight, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="person" size={13} color={sf.creamLight} />
                       </View>
                     )}
                   </View>

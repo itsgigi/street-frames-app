@@ -32,7 +32,7 @@ export default function WalksScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 40, shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 5 }}
       >
         {ALL_EVENTS.map((event, idx) => (
           <WalkCard

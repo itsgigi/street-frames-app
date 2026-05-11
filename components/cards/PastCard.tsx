@@ -18,7 +18,7 @@ export function PastCard({ imageUri, title, date, participants, onPress }: PastC
         overflow: 'hidden',
         width: 200,
         borderWidth: 6,
-        borderColor: 'white'
+        borderColor: sf.creamLight
       }}>
       <TouchableOpacity
         onPress={onPress}

@@ -239,7 +239,7 @@ export default function ProfileScreen() {
                       backgroundColor: sf.black,
                       borderRadius: 28,
                       borderWidth: 4,
-                      borderColor: sf.white,
+                      borderColor: sf.creamLight,
                       overflow: 'hidden',
                     }}
                   >
