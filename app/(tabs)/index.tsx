@@ -91,9 +91,9 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
 
         {/* Upcoming Walk */}
-        <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 20 }} />
+        <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 14 }} />
 
-        <View style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 7 }}>
+        <View >
           {latestWalk === undefined ? (
             <View style={{
               marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
@@ -128,7 +128,7 @@ export default function HomeScreen() {
         {/* Past Walks */}
         <ScreenHeader
           title="PAST WALKS"
-          style={{ paddingVertical: 0, marginTop: 10, marginBottom: 20 }}
+          style={{ paddingVertical: 0, marginTop: 0, marginBottom: 20 }}
           right={
             <Pressable hitSlop={8} onPress={() => router.push('/walks')}>
               <Text style={{ fontSize: 13, color: sf.orange, fontWeight: '600' }}>See all</Text>
