@@ -75,10 +75,18 @@ export default function EventDetailsScreen() {
     }
   };
 
-  const handleUploadImage = async (walkId: string) => {
+  const handleUploadImage = async (walkId: string, canUpload: boolean) => {
 
     if (!user) {
       Alert.alert('Sign in required', 'Please sign in to upload an image.');
+      return;
+    }
+
+    if (!canUpload) {
+      Alert.alert(
+        'Upload unavailable',
+        'You cannot upload photos for a photowalk you did not attend.'
+      );
       return;
     }
 
@@ -116,6 +124,7 @@ export default function EventDetailsScreen() {
   // ── Mock event (past walks) ──────────────────────────────────────────────
   if (mockEvent) {
     const isUpcoming = new Date(mockEvent.date) > new Date();
+    const joinedMockEvent = !!user;
     return (
       <View style={{ flex: 1, backgroundColor: sf.cream }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
@@ -144,8 +153,9 @@ export default function EventDetailsScreen() {
         </ScrollView>
         {isUpcoming && <JoinBar onPress={() => {}} joining={false} isPast={false} joined={false} insetBottom={insets.bottom} />}
         <UploadBar
-          onPress={() => handleUploadImage(mockEvent.id)}
+          onPress={() => handleUploadImage(mockEvent.id, joinedMockEvent)}
           uploading={uploading}
+          canUpload={joinedMockEvent}
           insetBottom={insets.bottom}
         />
       </View>
@@ -206,8 +216,9 @@ export default function EventDetailsScreen() {
 
       {isPast ? (
         <UploadBar
-          onPress={() => handleUploadImage(walk.id)}
+          onPress={() => handleUploadImage(walk.id, joined)}
           uploading={uploading}
+          canUpload={joined}
           insetBottom={insets.bottom}
         />
       ) : (
@@ -223,11 +234,20 @@ export default function EventDetailsScreen() {
   );
 }
 
-function UploadBar({ onPress, uploading, insetBottom }: {
+function UploadBar({ onPress, uploading, canUpload, insetBottom }: {
   onPress: () => void;
   uploading: boolean;
+  canUpload: boolean;
   insetBottom: number;
 }) {
+  const [showHint, setShowHint] = useState(false);
+
+  useEffect(() => {
+    if (!showHint) return;
+    const timer = setTimeout(() => setShowHint(false), 2200);
+    return () => clearTimeout(timer);
+  }, [showHint]);
+
   return (
     <View style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -238,12 +258,33 @@ function UploadBar({ onPress, uploading, insetBottom }: {
       borderTopWidth: 1,
       borderTopColor: 'rgba(33,34,38,0.08)',
     }}>
+      {showHint && !canUpload && (
+        <View style={{
+          alignSelf: 'center',
+          marginBottom: 10,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          backgroundColor: sf.grayDark,
+          borderRadius: 10,
+          maxWidth: '92%',
+        }}>
+          <Text style={{ color: sf.cream, fontSize: 12, fontWeight: '600', textAlign: 'center' }}>
+            You cannot upload photos for a photowalk you did not attend.
+          </Text>
+        </View>
+      )}
       <TouchableOpacity
-        onPress={onPress}
+        onPress={() => {
+          if (!canUpload) {
+            setShowHint(true);
+            return;
+          }
+          onPress();
+        }}
         disabled={uploading}
         activeOpacity={0.85}
         style={{
-          backgroundColor: sf.orange,
+          backgroundColor: canUpload ? sf.orange : sf.grayLight,
           borderRadius: 100,
           paddingVertical: 16,
           alignItems: 'center',
@@ -254,7 +295,7 @@ function UploadBar({ onPress, uploading, insetBottom }: {
         ) : (
           <Text style={{
             fontSize: 15, fontWeight: '700',
-            color: sf.cream,
+            color: canUpload ? sf.cream : sf.grayDark,
             letterSpacing: 0.3,
           }}>
             Upload an image
