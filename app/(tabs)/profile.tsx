@@ -13,7 +13,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
-import { fonts, sf } from '@/constants/theme';
+import { fonts, sf, cardBorder } from '@/constants/theme';
 
 const SCREEN_W = Dimensions.get('window').width;
 const TILE = (SCREEN_W - 32 - 4) / 3;
@@ -186,10 +186,9 @@ export default function ProfileScreen() {
                 activeOpacity={0.88}
                 style={{
                   width: TILE, height: TILE,
-                  borderRadius: 20,
+                  borderRadius: 16,
                   overflow: 'hidden',
-                  borderWidth: 3,
-                  borderColor: sf.white,
+                  ...cardBorder,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 3 },
                   shadowOpacity: 0.12,
@@ -237,9 +236,8 @@ export default function ProfileScreen() {
                     activeOpacity={0.88}
                     style={{
                       backgroundColor: sf.black,
-                      borderRadius: 28,
-                      borderWidth: 4,
-                      borderColor: sf.creamLight,
+                      borderRadius: 22,
+                      ...cardBorder,
                       overflow: 'hidden',
                     }}
                   >

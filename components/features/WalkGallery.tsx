@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getWalkGallery } from '@/services/photoService';
 import { getUserProfiles } from '@/services/userService';
 import { GalleryPhoto, UserProfile } from '@/types';
-import { sf } from '@/constants/theme';
+import { sf, cardBorder } from '@/constants/theme';
 import { SectionHeader } from '../ui/SectionHeader';
 import { PhotoLightbox } from '../ui/PhotoLightbox';
 
@@ -125,13 +125,13 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
                         >
                           <Image
                             source={{ uri: photo.imageUrl }}
-                            style={{ width: itemSize, height: itemSize, borderRadius: 8 }}
+                            style={{ width: itemSize, height: itemSize, borderRadius: 12, ...cardBorder }}
                             resizeMode="cover"
                           />
                           {isLast && (
                             <View style={{
                               position: 'absolute', inset: 0,
-                              borderRadius: 8,
+                              borderRadius: 12,
                               backgroundColor: 'rgba(0,0,0,0.5)',
                               alignItems: 'center', justifyContent: 'center',
                             }}>

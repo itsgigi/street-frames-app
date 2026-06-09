@@ -43,13 +43,13 @@ export function HeroCard({ imageUri, title, date, onPress }: HeroCardProps) {
           </ClipPath>
         </Defs>
         {/* Stroke drawn UNDER image — inner half covered by image, only outer border visible */}
-        <Path d="M 42 70 L 130 70 L 130 208 A 32 32 0 0 1 98 240 L 42 240 A 32 32 0 0 1 10 208 L 10 102 A 32 32 0 0 1 42 70 Z" fill="none" stroke={sf.creamLight} strokeWidth={10} />
-        <Path d="M 162 10 L 348 10 A 32 32 0 0 1 380 42 L 380 138 A 32 32 0 0 1 348 170 L 130 170 L 130 42 A 32 32 0 0 1 162 10 Z" fill="none" stroke={sf.creamLight} strokeWidth={10} />
+        <Path d="M 42 70 L 130 70 L 130 208 A 32 32 0 0 1 98 240 L 42 240 A 32 32 0 0 1 10 208 L 10 102 A 32 32 0 0 1 42 70 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
+        <Path d="M 162 10 L 348 10 A 32 32 0 0 1 380 42 L 380 138 A 32 32 0 0 1 348 170 L 130 170 L 130 42 A 32 32 0 0 1 162 10 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
         <G transform="translate(130, 202)">
-          <Path d="M 0 0 C 0 -23.872 5.76 -32 32 -32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={10} />
+          <Path d="M 0 0 C 0 -23.872 5.76 -32 32 -32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
         </G>
         <G transform="translate(130, 38)">
-          <Path d="M 0 0 C 0 23.872 -5.76 32 -32 32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={10} />
+          <Path d="M 0 0 C 0 23.872 -5.76 32 -32 32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
         </G>
         <SvgImage
           href={imageUri}

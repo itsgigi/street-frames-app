@@ -9,7 +9,7 @@ import { HeroCard } from '@/components/cards/HeroCard';
 import { PastCard } from '@/components/cards/PastCard';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useAuth } from '@/contexts/authContext';
-import { fonts, sf } from '@/constants/theme';
+import { fonts, sf, cardBorder } from '@/constants/theme';
 import { Walk, UserProfile } from '@/types';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
@@ -96,8 +96,8 @@ export default function HomeScreen() {
         <View >
           {latestWalk === undefined ? (
             <View style={{
-              marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
-              height: 500, borderWidth: 12, borderColor: 'white',
+              marginHorizontal: 20, marginBottom: 20, borderRadius: 32,
+              height: 500, ...cardBorder,
               backgroundColor: sf.grayLight,
               alignItems: 'center', justifyContent: 'center',
             }}>
@@ -105,8 +105,8 @@ export default function HomeScreen() {
             </View>
           ) : latestWalk === null ? (
             <View style={{
-              marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
-              height: 200, borderWidth: 12, borderColor: 'white',
+              marginHorizontal: 20, marginBottom: 20, borderRadius: 32,
+              height: 200, ...cardBorder,
               backgroundColor: sf.grayLight,
               alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>

@@ -73,6 +73,12 @@ export const fonts = {
   heading: 'ChauPhilomeneOne_400Regular',
 } as const;
 
+/** Shared thin border applied to all image cards/tiles across the app */
+export const cardBorder = {
+  borderWidth: 2,
+  borderColor: 'rgba(253, 247, 242, 0.85)',
+} as const;
+
 export const Typography = {
   // Font sizes
   fontSize: {
