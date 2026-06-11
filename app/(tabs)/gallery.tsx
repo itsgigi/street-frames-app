@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
 import { getUserProfiles } from '@/services/userService';
+import { subscribeToAllTags } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
 import { Avatar } from '@/components/ui/Avatar';
@@ -15,23 +16,18 @@ import { sf, cardBorder } from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
 
-const CATEGORIES = [
-  { key: 'all',             label: 'All' },
-  { key: 'photojournalism', label: 'Street' },
-  { key: 'vintage',         label: 'Vintage' },
-  { key: 'stilllife',       label: 'Still Life' },
-  { key: 'architecture',    label: 'Architecture' },
-  { key: 'nightlife',       label: 'Night' },
-];
-
 // ── Dial selector ────────────────────────────────────────────────────────────
 function FilterSelector({
+  tags,
   activeCategory,
   onSelect,
 }: {
+  tags: string[];
   activeCategory: string;
   onSelect: (key: string) => void;
 }) {
+  const categories = [{ key: 'all', label: 'All' }, ...tags.map((tag) => ({ key: tag, label: tag }))];
+
   return (
     <View>
     <ScrollView
@@ -39,7 +35,7 @@ function FilterSelector({
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 12 }}
     >
-      {CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const active = activeCategory === cat.key;
         return (
           <TouchableOpacity
@@ -71,7 +67,7 @@ function FilterSelector({
               color: active ? sf.cream : sf.black,
               letterSpacing: 0.2,
             }}>
-              {cat.label}
+              {cat.label === 'All' ? cat.label : cat.label.charAt(0).toUpperCase() + cat.label.slice(1)}
             </Text>
           </TouchableOpacity>
         );
@@ -90,10 +86,13 @@ function FilterSelector({
 // ── Screen ───────────────────────────────────────────────────────────────────
 export default function GalleryScreen() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [tags, setTags] = useState<string[]>([]);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [profileMap, setProfileMap] = useState<Map<string, UserProfile>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  useEffect(() => subscribeToAllTags(setTags), []);
 
   useEffect(() => {
     let mounted = true;
@@ -110,7 +109,8 @@ export default function GalleryScreen() {
         const uids = [...new Set(data.map((p) => p.userId))];
         const profiles = await getUserProfiles(uids);
         if (mounted) setProfileMap(new Map(profiles.map((p) => [p.id, p])));
-      } catch {
+      } catch (e) {
+        console.error('Failed to load gallery', e);
         if (mounted) setPhotos([]);
       } finally {
         if (mounted) setLoading(false);
@@ -129,7 +129,7 @@ export default function GalleryScreen() {
         title="GALLERY"
       />
 
-      <FilterSelector activeCategory={activeCategory} onSelect={setActiveCategory} />
+      <FilterSelector tags={tags} activeCategory={activeCategory} onSelect={setActiveCategory} />
 
       {/* ── Photo Grid ── */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>

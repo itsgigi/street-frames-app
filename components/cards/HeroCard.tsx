@@ -7,7 +7,8 @@ import { sf, fonts } from '@/constants/theme';
 // Original design viewBox
 const VB_W = 390;
 const VB_H = 250;
-const MARGIN = 20;
+const MARGIN_X = 14;
+const MARGIN_Y = 20;
 
 interface HeroCardProps {
   imageUri: string;
@@ -20,7 +21,7 @@ interface HeroCardProps {
 
 export function HeroCard({ imageUri, title, date, onPress }: HeroCardProps) {
   const { width: screenW } = useWindowDimensions();
-  const CARD_W = screenW - MARGIN * 2;
+  const CARD_W = screenW - MARGIN_X * 2;
   const CARD_H = Math.round(CARD_W * (VB_H / VB_W));
 
   const dateObj       = new Date(date);
@@ -81,10 +82,9 @@ export function HeroCard({ imageUri, title, date, onPress }: HeroCardProps) {
 
 const styles = StyleSheet.create({
   outer: {
-    marginLeft: MARGIN,
-    marginBottom: MARGIN,
+    marginLeft: MARGIN_X,
+    marginBottom: MARGIN_Y,
   },
-
   dateBadge: {
     position: 'absolute',
     top: 8,

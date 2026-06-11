@@ -4,6 +4,7 @@ import {
 } from "@firebase/firestore";
 import { db } from "./firebaseConfig";
 import { Walk, Stop } from "@/types";
+import { normalizeTags } from "./photoService";
 
 const COLLECTION = "walks";
 
@@ -28,6 +29,7 @@ function docToWalk(id: string, data: Record<string, any>): Walk {
       : (data.date ?? new Date().toISOString()),
     stops: parseStops(data.stops ?? []),
     participantUids: data.participantUIDs ?? data.participantUids ?? [],
+    tags: data.tags ?? [],
   };
 }
 
@@ -67,6 +69,7 @@ export interface CreateWalkInput {
   description: string;
   date: string;
   stops: Stop[];
+  tags: string[];
 }
 
 export async function createWalk(input: CreateWalkInput): Promise<string> {
@@ -77,6 +80,7 @@ export async function createWalk(input: CreateWalkInput): Promise<string> {
     description: input.description,
     date: input.date,
     stops: input.stops,
+    tags: normalizeTags(input.tags),
     participantUIDs: [],
   });
   return ref.id;
@@ -120,6 +124,19 @@ export function subscribeToAllWalks(
   const q = query(collection(db, COLLECTION), orderBy('date', 'desc'));
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map((d) => docToWalk(d.id, d.data())));
+  });
+}
+
+// Real-time subscription to the set of distinct tags across all walks.
+export function subscribeToAllTags(
+  callback: (tags: string[]) => void
+): () => void {
+  return onSnapshot(collection(db, COLLECTION), (snapshot) => {
+    const tags = new Set<string>();
+    snapshot.docs.forEach((d) => {
+      (d.data().tags ?? []).forEach((tag: string) => tags.add(tag));
+    });
+    callback([...tags].sort());
   });
 }
 

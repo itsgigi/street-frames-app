@@ -29,6 +29,7 @@ export default function CreateWalkScreen() {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [stops, setStops] = useState<DraftStop[]>([]);
+  const [tagsInput, setTagsInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +64,8 @@ export default function CreateWalkScreen() {
       parsedStops.push({ id: s.id, name: s.name.trim(), latitude: lat, longitude: lng });
     }
 
+    const tags = tagsInput.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+
     setError(null);
     setSaving(true);
 
@@ -74,6 +77,7 @@ export default function CreateWalkScreen() {
         description: description.trim(),
         date: parsedDate.toISOString(),
         stops: parsedStops,
+        tags,
       });
       router.back();
     } catch (e) {
@@ -172,6 +176,22 @@ export default function CreateWalkScreen() {
               numberOfLines={4}
               editable={!saving}
             />
+          </View>
+
+          <View style={{ marginBottom: 20 }}>
+            <Text style={labelStyle}>Tags</Text>
+            <TextInput
+              style={inputStyle}
+              value={tagsInput}
+              onChangeText={setTagsInput}
+              placeholder="e.g. street, vintage, architecture"
+              placeholderTextColor={sf.grayMid}
+              autoCapitalize="none"
+              editable={!saving}
+            />
+            <Text style={{ fontSize: 11, color: sf.grayMid, marginTop: 6 }}>
+              Comma-separated. Applied to every photo uploaded for this walk.
+            </Text>
           </View>
 
           <View style={{ marginBottom: 20 }}>

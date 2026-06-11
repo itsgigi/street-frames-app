@@ -44,6 +44,7 @@ export interface Walk {
   date: string;
   stops: Stop[];
   participantUids: string[];
+  tags: string[];
 }
 
 export interface Event {
