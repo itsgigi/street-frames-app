@@ -9,6 +9,7 @@ import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
 import { getUserProfiles } from '@/services/userService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
+import { Avatar } from '@/components/ui/Avatar';
 import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
 
@@ -162,9 +163,10 @@ export default function GalleryScreen() {
                   />
                   <View style={{ position: 'absolute', bottom: 8, right: 8 }}>
                     {uploader?.profilePhoto ? (
-                      <Image
+                      <Avatar
                         source={{ uri: uploader.profilePhoto }}
-                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.creamLight }}
+                        size={26}
+                        isVerified={uploader?.isVerified}
                       />
                     ) : (
                       <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.creamLight, alignItems: 'center', justifyContent: 'center' }}>

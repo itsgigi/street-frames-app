@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView, View, Text, Image, TouchableOpacity, Pressable,
-  Dimensions, ActivityIndicator, Share,
+  ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,18 +10,16 @@ import { router } from 'expo-router';
 import { mockPhotos } from '@/services/mockData';
 import { subscribeToUserWalks } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { Avatar } from '@/components/ui/Avatar';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
 import { fonts, sf, cardBorder } from '@/constants/theme';
 
-const SCREEN_W = Dimensions.get('window').width;
-const TILE = (SCREEN_W - 32 - 4) / 3;
-
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 export default function ProfileScreen() {
-  const [activeTab, setActiveTab] = useState<'featured' | 'walks'>('featured');
+  const [activeTab, setActiveTab] = useState<'walks' | 'admin'>('walks');
   const [userWalks, setUserWalks] = useState<Walk[]>([]);
   const { logout } = useAuthMethods();
   const { userProfile, user, loading } = useAuth();
@@ -75,9 +73,10 @@ export default function ProfileScreen() {
             borderWidth: 3, borderColor: sf.orange,
             padding: 3, marginBottom: 14,
           }}>
-            <Image
+            <Avatar
               source={{ uri: displayAvatar }}
-              style={{ width: '100%', height: '100%', borderRadius: 44 }}
+              size={84}
+              isVerified={userProfile?.isVerified}
             />
           </View>
 
@@ -146,7 +145,7 @@ export default function ProfileScreen() {
           borderBottomWidth: 1, borderBottomColor: 'rgba(33,34,38,0.10)',
           marginHorizontal: 20, marginBottom: 16,
         }}>
-          {(['featured', 'walks'] as const).map((tab) => (
+          {(userProfile?.isVerified ? (['walks', 'admin'] as const) : (['walks'] as const)).map((tab) => (
             <Pressable
               key={tab}
               onPress={() => setActiveTab(tab)}
@@ -157,7 +156,7 @@ export default function ProfileScreen() {
                 textTransform: 'uppercase', fontFamily: fonts.heading,
                 color: activeTab === tab ? sf.black : sf.grayDark,
               }}>
-                {tab === 'featured' ? 'Featured' : 'Walks'}
+                {tab === 'walks' ? 'Walks' : 'Admin'}
               </Text>
               {activeTab === tab && (
                 <View style={{
@@ -168,43 +167,6 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </View>
-
-        {/* ── Featured: photo grid ── */}
-        {activeTab === 'featured' && (
-          <View style={{
-            flexDirection: 'row', flexWrap: 'wrap',
-            paddingHorizontal: 16, gap: 2,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 2,
-            elevation: 2,
-          }}>
-            {mockPhotos.map((photo) => (
-              <TouchableOpacity
-                key={photo.id}
-                activeOpacity={0.88}
-                style={{
-                  width: TILE, height: TILE,
-                  borderRadius: 16,
-                  overflow: 'hidden',
-                  ...cardBorder,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 3 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 6,
-                  elevation: 4,
-                }}
-              >
-                <Image
-                  source={{ uri: photo.imageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
         {/* ── Walks tab ── */}
         {activeTab === 'walks' && (
@@ -290,6 +252,28 @@ export default function ProfileScreen() {
               })}
             </View>
           )
+        )}
+
+        {/* ── Admin tab ── */}
+        {activeTab === 'admin' && (
+          <View style={{ paddingHorizontal: 20, gap: 14 }}>
+            <TouchableOpacity
+              onPress={() => router.push('/create-walk' as any)}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: sf.orange,
+                borderRadius: 22,
+                paddingVertical: 16,
+                alignItems: 'center', justifyContent: 'center',
+                flexDirection: 'row', gap: 8,
+              }}
+            >
+              <Ionicons name="add-circle-outline" size={20} color={sf.cream} />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: sf.cream, fontFamily: fonts.heading, letterSpacing: 0.5 }}>
+                Create Walk
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* ── Logout ── */}

@@ -1,17 +1,23 @@
-import React from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { nextEvent, pastEvents } from '@/services/mockData';
+import { subscribeToAllWalks } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { WalkCard } from '@/components/features/WalkCard';
 import { sf } from '@/constants/theme';
-
-const ALL_EVENTS = [nextEvent, ...pastEvents];
+import { Walk } from '@/types';
 
 export default function WalksScreen() {
   const router = useRouter();
+  const [walks, setWalks] = useState<Walk[] | undefined>(undefined);
+
+  useEffect(() => {
+    return subscribeToAllWalks(setWalks);
+  }, []);
+
+  const now = new Date();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>
@@ -30,19 +36,29 @@ export default function WalksScreen() {
         }
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 40, shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 5 }}
-      >
-        {ALL_EVENTS.map((event, idx) => (
-          <WalkCard
-            key={event.id}
-            event={event}
-            isUpcoming={idx === 0}
-            onPress={() => router.push(`/event/${event.id}`)}
-          />
-        ))}
-      </ScrollView>
+      {walks === undefined ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={sf.orange} />
+        </View>
+      ) : walks.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Text style={{ color: sf.black, fontSize: 18, fontWeight: '600' }}>No walks yet</Text>
+        </View>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 40, shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 5 }}
+        >
+          {walks.map((walk) => (
+            <WalkCard
+              key={walk.id}
+              walk={walk}
+              isUpcoming={new Date(walk.date) > now}
+              onPress={() => router.push(`/event/${walk.id}`)}
+            />
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
