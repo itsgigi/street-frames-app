@@ -12,6 +12,7 @@ import {
 import {db} from '@/services/firebaseConfig';
 import {GalleryPhoto} from '@/types';
 import {uploadWalkImage} from '@/services/storageService';
+import {getWalkById} from '@/services/walkService';
 
 const COLLECTION = 'photos';
 
@@ -54,6 +55,18 @@ function docToPhoto(id: string, data: FirestorePhotoDoc): GalleryPhoto {
   };
 }
 
+async function assertWalkParticipant(userId: string, walkId: string): Promise<void> {
+  const walk = await getWalkById(walkId);
+
+  if (!walk) {
+    throw new Error('Walk not found');
+  }
+
+  if (!walk.participantUids.includes(userId)) {
+    throw new Error('Only participants can upload photos for this walk');
+  }
+}
+
 export async function createPhotoMetadata({
   imageUrl,
   userId,
@@ -78,6 +91,8 @@ export async function uploadWalkPhoto({
   walkId,
   tags = [],
 }: UploadWalkPhotoInput): Promise<GalleryPhoto> {
+  await assertWalkParticipant(userId, walkId);
+
   const { imageUrl } = await uploadWalkImage({ localUri, userId, walkId });
 
   const id = await createPhotoMetadata({ imageUrl, userId, walkId, tags });
