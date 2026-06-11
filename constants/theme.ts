@@ -7,6 +7,7 @@
 // Mirrors the sf.* tokens in tailwind.config.js
 export const sf = {
   black:      '#212226', // Darkroom Black — primary bg (dark), text on light
+  creamLight: '#FDF7F2', // Gelatin Cream Light — primary bg (light), text on dark
   cream:      '#F2DCC2', // Gelatin Cream — text on dark, warm surfaces
   orange:     '#BF5B21', // Shutter Orange — primary CTA, active states
   orangeDark: '#BF522A', // Copper Dark — CTA hover/pressed
@@ -70,6 +71,12 @@ export const Spacing = {
 
 export const fonts = {
   heading: 'ChauPhilomeneOne_400Regular',
+} as const;
+
+/** Shared thin border applied to all image cards/tiles across the app */
+export const cardBorder = {
+  borderWidth: 2,
+  borderColor: 'rgba(253, 247, 242, 0.85)',
 } as const;
 
 export const Typography = {

@@ -27,7 +27,7 @@ export function WalkCard({ event, isUpcoming, onPress }: {
     <View style={{
       backgroundColor: sf.black,
       borderRadius: 35,
-      borderColor: sf.white,
+      borderColor: sf.creamLight,
       borderWidth: 5,
       overflow: 'hidden',
       shadowColor: '#000',

@@ -10,7 +10,7 @@ import { getUserProfiles } from '@/services/userService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
 import { GalleryPhoto, UserProfile } from '@/types';
-import { sf } from '@/constants/theme';
+import { sf, cardBorder } from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
 
@@ -153,7 +153,7 @@ export default function GalleryScreen() {
                   key={photo.id}
                   activeOpacity={0.88}
                   onPress={() => setSelectedIndex(index)}
-                  style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 28, overflow: 'hidden', borderColor: sf.grayLight, borderWidth: 6 }}
+                  style={{ width: TILE_SIZE, height: TILE_SIZE * 1.2, borderRadius: 18, overflow: 'hidden', ...cardBorder }}
                 >
                   <Image
                     source={{ uri: photo.imageUrl }}
@@ -164,11 +164,11 @@ export default function GalleryScreen() {
                     {uploader?.profilePhoto ? (
                       <Image
                         source={{ uri: uploader.profilePhoto }}
-                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.white }}
+                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.creamLight }}
                       />
                     ) : (
-                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.white, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="person" size={13} color={sf.white} />
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.creamLight, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="person" size={13} color={sf.creamLight} />
                       </View>
                     )}
                   </View>

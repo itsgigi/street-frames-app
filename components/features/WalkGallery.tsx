@@ -4,12 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { getWalkGallery } from '@/services/photoService';
 import { getUserProfiles } from '@/services/userService';
 import { GalleryPhoto, UserProfile } from '@/types';
-import { sf } from '@/constants/theme';
+import { sf, cardBorder } from '@/constants/theme';
 import { SectionHeader } from '../ui/SectionHeader';
 import { PhotoLightbox } from '../ui/PhotoLightbox';
 
-const GAP = 4;
-const COLS = 3;
+const GAP = 6;
+const MAX_VISIBLE = 4;
 
 interface WalkGalleryProps {
   walkId: string;
@@ -56,7 +56,7 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
   }, [walkId, refreshKey]);
 
   const itemSize = containerWidth > 0
-    ? (containerWidth - GAP * (COLS - 1)) / COLS
+    ? (containerWidth - GAP * (MAX_VISIBLE - 1)) / MAX_VISIBLE
     : 0;
 
   return (
@@ -77,11 +77,6 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
             </View>
           ) : itemSize > 0 ? (
             groups.map((group) => {
-              const rows: GalleryPhoto[][] = [];
-              for (let i = 0; i < group.photos.length; i += COLS) {
-                rows.push(group.photos.slice(i, i + COLS));
-              }
-
               return (
                 <View key={group.userId} style={{ gap: 10 }}>
                   {/* User header */}
@@ -115,28 +110,39 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
                     </Text>
                   </View>
 
-                  {/* Photo grid for this user */}
-                  <View style={{ gap: GAP }}>
-                    {rows.map((row, ri) => (
-                      <View key={ri} style={{ flexDirection: 'row', gap: GAP }}>
-                        {row.map((photo) => {
-                          const globalIndex = allPhotos.findIndex((p) => p.id === photo.id);
-                          return (
-                            <TouchableOpacity
-                              key={photo.id}
-                              activeOpacity={0.85}
-                              onPress={() => setSelectedIndex(globalIndex)}
-                            >
-                              <Image
-                                source={{ uri: photo.imageUrl }}
-                                style={{ width: itemSize, height: itemSize, borderRadius: 8 }}
-                                resizeMode="cover"
-                              />
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    ))}
+                  {/* Single-row photo strip */}
+                  <View style={{ flexDirection: 'row', gap: GAP }}>
+                    {group.photos.slice(0, MAX_VISIBLE).map((photo, idx) => {
+                      const globalIndex = allPhotos.findIndex((p) => p.id === photo.id);
+                      const isLast = idx === MAX_VISIBLE - 1 && group.photos.length > MAX_VISIBLE;
+                      const overflow = group.photos.length - MAX_VISIBLE;
+                      return (
+                        <TouchableOpacity
+                          key={photo.id}
+                          activeOpacity={0.85}
+                          onPress={() => setSelectedIndex(globalIndex)}
+                          style={{ position: 'relative' }}
+                        >
+                          <Image
+                            source={{ uri: photo.imageUrl }}
+                            style={{ width: itemSize, height: itemSize, borderRadius: 12, ...cardBorder }}
+                            resizeMode="cover"
+                          />
+                          {isLast && (
+                            <View style={{
+                              position: 'absolute', inset: 0,
+                              borderRadius: 12,
+                              backgroundColor: 'rgba(0,0,0,0.5)',
+                              alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+                                +{overflow}
+                              </Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 </View>
               );

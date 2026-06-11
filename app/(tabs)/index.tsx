@@ -9,7 +9,7 @@ import { HeroCard } from '@/components/cards/HeroCard';
 import { PastCard } from '@/components/cards/PastCard';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useAuth } from '@/contexts/authContext';
-import { fonts, sf } from '@/constants/theme';
+import { fonts, sf, cardBorder } from '@/constants/theme';
 import { Walk, UserProfile } from '@/types';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
@@ -91,13 +91,13 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
 
         {/* Upcoming Walk */}
-        <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 20 }} />
+        <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 14 }} />
 
-        <View style={{ shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 7 }}>
+        <View >
           {latestWalk === undefined ? (
             <View style={{
-              marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
-              height: 500, borderWidth: 12, borderColor: 'white',
+              marginHorizontal: 20, marginBottom: 20, borderRadius: 32,
+              height: 500, ...cardBorder,
               backgroundColor: sf.grayLight,
               alignItems: 'center', justifyContent: 'center',
             }}>
@@ -105,8 +105,8 @@ export default function HomeScreen() {
             </View>
           ) : latestWalk === null ? (
             <View style={{
-              marginHorizontal: 20, marginBottom: 20, borderRadius: 45,
-              height: 200, borderWidth: 12, borderColor: 'white',
+              marginHorizontal: 20, marginBottom: 20, borderRadius: 32,
+              height: 200, ...cardBorder,
               backgroundColor: sf.grayLight,
               alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>
@@ -128,7 +128,7 @@ export default function HomeScreen() {
         {/* Past Walks */}
         <ScreenHeader
           title="PAST WALKS"
-          style={{ paddingVertical: 0, marginTop: 10, marginBottom: 20 }}
+          style={{ paddingVertical: 0, marginTop: 0, marginBottom: 20 }}
           right={
             <Pressable hitSlop={8} onPress={() => router.push('/walks')}>
               <Text style={{ fontSize: 13, color: sf.orange, fontWeight: '600' }}>See all</Text>

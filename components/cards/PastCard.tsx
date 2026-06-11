@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { fonts, sf } from '@/constants/theme';
+import { fonts, sf, cardBorder } from '@/constants/theme';
 
 interface PastCardProps {
   imageUri: string;
@@ -14,11 +14,10 @@ interface PastCardProps {
 export function PastCard({ imageUri, title, date, participants, onPress }: PastCardProps) {
   return (
     <View  style={{
-        borderRadius: 35,
+        borderRadius: 24,
         overflow: 'hidden',
         width: 200,
-        borderWidth: 6,
-        borderColor: 'white'
+        ...cardBorder,
       }}>
       <TouchableOpacity
         onPress={onPress}
