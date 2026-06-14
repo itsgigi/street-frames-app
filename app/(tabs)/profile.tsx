@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getPhotosByUser } from '@/services/photoService';
 import { galleryQueryKeys } from '@/services/queryKeys';
 import { subscribeToUserWalks } from '@/services/walkService';
-import { UserPhotoGrid } from '@/components/features/UserPhotoGrid';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuthMethods } from '@/hooks/useAuthMethods';

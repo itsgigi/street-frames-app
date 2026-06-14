@@ -8,7 +8,6 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { getUserProfile } from '@/services/userService';
 import { userQueryKeys } from '@/services/queryKeys';
-import { UserPhotoGrid } from '@/components/features/UserPhotoGrid';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Avatar } from '@/components/ui/Avatar';
 import { sf, fonts } from '@/constants/theme';
@@ -109,9 +108,6 @@ export default function UserProfileScreen() {
             </Text>
           )}
         </View>
-
-        {/* ── Photo grid ── */}
-        <UserPhotoGrid uid={uid!} />
       </ScrollView>
     </SafeAreaView>
   );
