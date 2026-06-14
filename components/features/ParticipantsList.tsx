@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { UserProfile } from '@/types';
 import { fonts, sf } from '@/constants/theme';
+import { Avatar } from '@/components/ui/Avatar';
 import { PhotographersModal } from './PhotographersModal';
 
 const MAX_VISIBLE = 6;
@@ -50,12 +51,12 @@ export const ParticipantsList: React.FC<ParticipantsListProps> = ({ participants
             <View key={p.id} style={{ alignItems: 'center', gap: 5 }}>
               <View style={{
                 width: 52, height: 52, borderRadius: 26,
-                borderWidth: 2, borderColor: sf.orange, overflow: 'hidden',
+                borderWidth: 2, borderColor: sf.orange, padding: 2,
               }}>
-                <Image
+                <Avatar
                   source={{ uri: p.profilePhoto || PLACEHOLDER }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
+                  size={44}
+                  isVerified={p.isVerified}
                 />
               </View>
               <Text style={{ fontSize: 10, color: sf.black, opacity: 0.75, fontWeight: '600', maxWidth: 52 }} numberOfLines={1}>

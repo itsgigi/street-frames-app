@@ -10,6 +10,7 @@ import { getUserProfile } from '@/services/userService';
 import { userQueryKeys } from '@/services/queryKeys';
 import { UserPhotoGrid } from '@/components/features/UserPhotoGrid';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { Avatar } from '@/components/ui/Avatar';
 import { sf, fonts } from '@/constants/theme';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
@@ -85,9 +86,10 @@ export default function UserProfileScreen() {
             borderWidth: 3, borderColor: sf.orange,
             padding: 3, marginBottom: 14,
           }}>
-            <Image
+            <Avatar
               source={{ uri: avatarUri }}
-              style={{ width: '100%', height: '100%', borderRadius: 44 }}
+              size={84}
+              isVerified={profile.isVerified}
             />
           </View>
 

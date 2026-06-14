@@ -112,7 +112,7 @@ export default function EventDetailsScreen() {
         localUri: result.assets[0].uri,
         userId: user.uid,
         walkId,
-        tags: [],
+        tags: walk?.tags ?? [],
       });
       // Invalidate gallery caches so new photo appears immediately
       void queryClient.invalidateQueries({ queryKey: galleryQueryKeys.walk(walkId) });

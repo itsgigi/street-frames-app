@@ -11,6 +11,7 @@ export interface UserProfile {
   handle: string;    // set once on account creation, never editable
   biography: string;
   profilePhoto: string;
+  isVerified?: boolean;
 }
 
 // Used for mock event participants (walk attendees)
@@ -43,6 +44,7 @@ export interface Walk {
   date: string;
   stops: Stop[];
   participantUids: string[];
+  tags: string[];
 }
 
 export interface Event {

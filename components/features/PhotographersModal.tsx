@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  Modal, View, Text, Image, FlatList, TouchableOpacity, Pressable,
+  Modal, View, Text, FlatList, TouchableOpacity, Pressable,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { UserProfile } from '@/types';
 import { fonts, sf } from '@/constants/theme';
+import { Avatar } from '@/components/ui/Avatar';
 
 const PLACEHOLDER = 'https://i.pravatar.cc/150?img=0';
 
@@ -83,12 +84,12 @@ export function PhotographersModal({ visible, participants, onClose }: Props) {
               >
                 <View style={{
                   width: 48, height: 48, borderRadius: 24,
-                  borderWidth: 2, borderColor: sf.orange, overflow: 'hidden',
+                  borderWidth: 2, borderColor: sf.orange, padding: 2,
                 }}>
-                  <Image
+                  <Avatar
                     source={{ uri: item.profilePhoto || PLACEHOLDER }}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="cover"
+                    size={40}
+                    isVerified={item.isVerified}
                   />
                 </View>
                 <View style={{ flex: 1 }}>

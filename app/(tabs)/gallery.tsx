@@ -1,38 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ScrollView, View, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useQuery } from '@tanstack/react-query';
 import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
-import { getUserProfileMap } from '@/services/userService';
-import { galleryQueryKeys } from '@/services/queryKeys';
+import { getUserProfiles } from '@/services/userService';
+import { subscribeToAllTags } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
-import { UserProfile } from '@/types';
+import { Avatar } from '@/components/ui/Avatar';
+import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
 
-const CATEGORIES = [
-  { key: 'all',             label: 'All' },
-  { key: 'photojournalism', label: 'Street' },
-  { key: 'vintage',         label: 'Vintage' },
-  { key: 'stilllife',       label: 'Still Life' },
-  { key: 'architecture',    label: 'Architecture' },
-  { key: 'nightlife',       label: 'Night' },
-];
-
 // ── Dial selector ────────────────────────────────────────────────────────────
 function FilterSelector({
+  tags,
   activeCategory,
   onSelect,
 }: {
+  tags: string[];
   activeCategory: string;
   onSelect: (key: string) => void;
 }) {
+  const categories = [{ key: 'all', label: 'All' }, ...tags.map((tag) => ({ key: tag, label: tag }))];
+
   return (
     <View>
     <ScrollView
@@ -40,7 +35,7 @@ function FilterSelector({
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingBottom: 12 }}
     >
-      {CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const active = activeCategory === cat.key;
         return (
           <TouchableOpacity
@@ -72,7 +67,7 @@ function FilterSelector({
               color: active ? sf.cream : sf.black,
               letterSpacing: 0.2,
             }}>
-              {cat.label}
+              {cat.label === 'All' ? cat.label : cat.label.charAt(0).toUpperCase() + cat.label.slice(1)}
             </Text>
           </TouchableOpacity>
         );
@@ -91,26 +86,40 @@ function FilterSelector({
 // ── Screen ───────────────────────────────────────────────────────────────────
 export default function GalleryScreen() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [tags, setTags] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [profileMap, setProfileMap] = useState<Map<string, UserProfile>>(new Map());
+  const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  const { data, isLoading: loading } = useQuery({
-    queryKey: activeCategory === 'all'
-      ? galleryQueryKeys.global(50)
-      : galleryQueryKeys.byTag(activeCategory, 50),
-    queryFn: async () => {
-      const photos = activeCategory === 'all'
-        ? await getGlobalGallery(50)
-        : await getGalleryByTag(activeCategory, 50);
+  useEffect(() => subscribeToAllTags(setTags), []);
 
-      const uids = [...new Set(photos.map((p) => p.userId))];
-      const profileMap = await getUserProfileMap(uids);
+  useEffect(() => {
+    let mounted = true;
 
-      return { photos, profileMap };
-    },
-  });
+    const loadPhotos = async () => {
+      setLoading(true);
+      try {
+        const data = activeCategory === 'all'
+          ? await getGlobalGallery(50)
+          : await getGalleryByTag(activeCategory, 50);
+        if (!mounted) return;
+        setPhotos(data);
 
-  const photos = data?.photos ?? [];
-  const profileMap = data?.profileMap ?? new Map<string, UserProfile>();
+        const uids = [...new Set(data.map((p) => p.userId))];
+        const profiles = await getUserProfiles(uids);
+        if (mounted) setProfileMap(new Map(profiles.map((p) => [p.id, p])));
+      } catch (e) {
+        console.error('Failed to load gallery', e);
+        if (mounted) setPhotos([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadPhotos();
+    return () => { mounted = false; };
+  }, [activeCategory]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>
@@ -120,7 +129,7 @@ export default function GalleryScreen() {
         title="GALLERY"
       />
 
-      <FilterSelector activeCategory={activeCategory} onSelect={setActiveCategory} />
+      <FilterSelector tags={tags} activeCategory={activeCategory} onSelect={setActiveCategory} />
 
       {/* ── Photo Grid ── */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
@@ -154,9 +163,10 @@ export default function GalleryScreen() {
                   />
                   <View style={{ position: 'absolute', bottom: 8, right: 8 }}>
                     {uploader?.profilePhoto ? (
-                      <Image
+                      <Avatar
                         source={{ uri: uploader.profilePhoto }}
-                        style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: sf.creamLight }}
+                        size={26}
+                        isVerified={uploader?.isVerified}
                       />
                     ) : (
                       <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: sf.grayDark, borderWidth: 1.5, borderColor: sf.creamLight, alignItems: 'center', justifyContent: 'center' }}>

@@ -39,7 +39,7 @@ interface UploadWalkPhotoInput {
   tags?: string[];
 }
 
-function normalizeTags(tags: string[] = []): string[] {
+export function normalizeTags(tags: string[] = []): string[] {
   return [...new Set(tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
 }
 
