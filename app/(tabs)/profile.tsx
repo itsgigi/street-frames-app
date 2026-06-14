@@ -23,6 +23,7 @@ const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<'featured' | 'walks'>('featured');
   const [userWalks, setUserWalks] = useState<Walk[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { logout } = useAuthMethods();
   const { userProfile, user, loading } = useAuth();
 
@@ -65,12 +66,52 @@ export default function ProfileScreen() {
       {/* ── Header ── */}
       <ScreenHeader
         title="PROFILE"
-        /* right={
-          <Pressable hitSlop={12}>
-            <Ionicons name="ellipsis-horizontal" size={24} color={sf.black} />
-          </Pressable>
-        } */
+        right={
+          <View style={{ position: 'relative' }}>
+            <Pressable
+              hitSlop={12}
+              onPress={() => setMenuOpen(!menuOpen)}
+            >
+              <Ionicons name="ellipsis-vertical" size={24} color={sf.black} />
+            </Pressable>
+            {menuOpen && (
+              <Pressable
+                style={{
+                  position: 'absolute', top: 36, right: 0, zIndex: 1000,
+                  backgroundColor: sf.white,
+                  borderRadius: 8,
+                  minWidth: 180,
+                  borderWidth: 1, borderColor: 'rgba(33,34,38,0.1)',
+                  ...shadow,
+                }}
+                onPress={() => {}}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    setMenuOpen(false);
+                    logout();
+                  }}
+                  style={{
+                    paddingHorizontal: 16, paddingVertical: 12,
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                  }}
+                >
+                  <Ionicons name="log-out-outline" size={18} color={sf.grayDark} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: sf.grayDark }}>
+                    Sign out
+                  </Text>
+                </TouchableOpacity>
+              </Pressable>
+            )}
+          </View>
+        }
       />
+      {menuOpen && (
+        <Pressable
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
+          onPress={() => setMenuOpen(false)}
+        />
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
 
@@ -266,24 +307,17 @@ export default function ProfileScreen() {
           )
         )}
 
-        {/* ── Logout ── */}
-        <TouchableOpacity
-          onPress={logout}
-          style={{
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-            marginHorizontal: 20, marginTop: 32,
-            paddingVertical: 14, borderRadius: 100,
-            borderWidth: 1.5, borderColor: 'rgba(33,34,38,0.10)',
-            backgroundColor: sf.white,
-            marginBottom: 60,
-          }}
-          activeOpacity={0.75}
-        >
-          <Ionicons name="log-out-outline" size={18} color={sf.grayDark} />
-          <Text style={{ fontSize: 13, fontWeight: '600', color: sf.grayDark }}>Sign out</Text>
-        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const shadow = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 3,
+} as const;
+
