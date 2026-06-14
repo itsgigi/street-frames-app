@@ -15,6 +15,7 @@ import {uploadWalkImage} from '@/services/storageService';
 import {getWalkById} from '@/services/walkService';
 
 const COLLECTION = 'photos';
+const MAX_PHOTOS_PER_USER_PER_WALK = 3;
 
 interface FirestorePhotoDoc {
   imageUrl: string;
@@ -67,6 +68,25 @@ async function assertWalkParticipant(userId: string, walkId: string): Promise<vo
   }
 }
 
+async function getUserPhotoCountForWalk(userId: string, walkId: string): Promise<number> {
+  const q = query(
+    collection(db, COLLECTION),
+    where('userId', '==', userId),
+    where('walkId', '==', walkId),
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.size;
+}
+
+async function assertPhotoLimitNotExceeded(userId: string, walkId: string): Promise<void> {
+  const photoCount = await getUserPhotoCountForWalk(userId, walkId);
+
+  if (photoCount >= MAX_PHOTOS_PER_USER_PER_WALK) {
+    throw new Error(`You can only upload ${MAX_PHOTOS_PER_USER_PER_WALK} photos per walk. You have already reached the limit.`);
+  }
+}
+
 export async function createPhotoMetadata({
   imageUrl,
   userId,
@@ -92,6 +112,7 @@ export async function uploadWalkPhoto({
   tags = [],
 }: UploadWalkPhotoInput): Promise<GalleryPhoto> {
   await assertWalkParticipant(userId, walkId);
+  await assertPhotoLimitNotExceeded(userId, walkId);
 
   const { imageUrl } = await uploadWalkImage({ localUri, userId, walkId });
 
