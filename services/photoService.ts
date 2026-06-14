@@ -168,3 +168,20 @@ export async function getGalleryByTag(tag: string, maxItems = 50): Promise<Galle
   return snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
 }
 
+export async function getPhotosByUser(userId: string, maxItems = 6): Promise<GalleryPhoto[]> {
+  const q = query(
+    collection(db, COLLECTION),
+    where('userId', '==', userId),
+    limit(maxItems)
+  );
+
+  const snapshot = await getDocs(q);
+  const photos = snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
+  return photos
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.localeCompare(a.createdAt);
+    })
+    .slice(0, maxItems);
+}
+

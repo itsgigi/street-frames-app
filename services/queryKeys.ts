@@ -12,6 +12,8 @@ export const galleryQueryKeys = {
   byTag: (tag: string, limit?: number) =>
     ['gallery', 'tag', tag, limit] as const,
   walk: (walkId: string) => ['gallery', 'walk', walkId] as const,
+  byUser: (uid: string, limit?: number) =>
+    ['gallery', 'user', uid, limit] as const,
 };
 
 export const userQueryKeys = {

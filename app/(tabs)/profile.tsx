@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import {
   ScrollView, View, Text, Image, TouchableOpacity, Pressable,
-  Dimensions, ActivityIndicator, Share,
+  ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { mockPhotos } from '@/services/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { getPhotosByUser } from '@/services/photoService';
+import { galleryQueryKeys } from '@/services/queryKeys';
 import { subscribeToUserWalks } from '@/services/walkService';
+import { UserPhotoGrid } from '@/components/features/UserPhotoGrid';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
 import { fonts, sf, cardBorder } from '@/constants/theme';
-
-const SCREEN_W = Dimensions.get('window').width;
-const TILE = (SCREEN_W - 32 - 4) / 3;
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
@@ -31,6 +31,12 @@ export default function ProfileScreen() {
     const unsub = subscribeToUserWalks(user.uid, setUserWalks);
     return unsub;
   }, [user]);
+
+  const { data: userPhotos = [] } = useQuery({
+    queryKey: galleryQueryKeys.byUser(user?.uid ?? '', 6),
+    queryFn: () => getPhotosByUser(user!.uid, 6),
+    enabled: !!user,
+  });
 
   if (loading) {
     return (
@@ -99,7 +105,7 @@ export default function ProfileScreen() {
           {/* Stats row */}
           <View style={{ flexDirection: 'row', gap: 36, marginBottom: 20 }}>
             {[
-              { label: 'Photos', value: mockPhotos.length },
+              { label: 'Photos', value: userPhotos.length },
               { label: 'Walks',  value: userWalks.length },
             ].map(({ label, value }) => (
               <View key={label} style={{ alignItems: 'center' }}>
@@ -170,40 +176,8 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── Featured: photo grid ── */}
-        {activeTab === 'featured' && (
-          <View style={{
-            flexDirection: 'row', flexWrap: 'wrap',
-            paddingHorizontal: 16, gap: 2,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 2,
-            elevation: 2,
-          }}>
-            {mockPhotos.map((photo) => (
-              <TouchableOpacity
-                key={photo.id}
-                activeOpacity={0.88}
-                style={{
-                  width: TILE, height: TILE,
-                  borderRadius: 16,
-                  overflow: 'hidden',
-                  ...cardBorder,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 3 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 6,
-                  elevation: 4,
-                }}
-              >
-                <Image
-                  source={{ uri: photo.imageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
+        {activeTab === 'featured' && user && (
+          <UserPhotoGrid uid={user.uid} />
         )}
 
         {/* ── Walks tab ── */}
