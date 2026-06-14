@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { getWalkGallery } from '@/services/photoService';
-import { getUserProfiles } from '@/services/userService';
+import { getUserProfileMap } from '@/services/userService';
+import { galleryQueryKeys } from '@/services/queryKeys';
 import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
 import { SectionHeader } from '../ui/SectionHeader';
@@ -13,7 +15,6 @@ const MAX_VISIBLE = 4;
 
 interface WalkGalleryProps {
   walkId: string;
-  refreshKey?: number;
 }
 
 interface UserGroup {
@@ -22,17 +23,14 @@ interface UserGroup {
   photos: GalleryPhoto[];
 }
 
-export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
-  const [groups, setGroups] = useState<UserGroup[]>([]);
-  const [allPhotos, setAllPhotos] = useState<GalleryPhoto[]>([]);
-  const [loading, setLoading] = useState(true);
+export function WalkGallery({ walkId }: WalkGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  useEffect(() => {
-    setLoading(true);
-    getWalkGallery(walkId).then(async (photos) => {
-      setAllPhotos(photos);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: galleryQueryKeys.walk(walkId),
+    queryFn: async () => {
+      const photos = await getWalkGallery(walkId);
 
       const byUser = new Map<string, GalleryPhoto[]>();
       for (const p of photos) {
@@ -42,18 +40,20 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
       }
 
       const uids = Array.from(byUser.keys());
-      const profiles = await getUserProfiles(uids);
-      const profileMap = new Map(profiles.map((p) => [p.id, p]));
+      const profileMap = await getUserProfileMap(uids);
 
-      setGroups(
-        uids.map((uid) => ({
-          userId: uid,
-          user: profileMap.get(uid) ?? null,
-          photos: byUser.get(uid)!,
-        }))
-      );
-    }).finally(() => setLoading(false));
-  }, [walkId, refreshKey]);
+      const groups: UserGroup[] = uids.map((uid) => ({
+        userId: uid,
+        user: profileMap.get(uid) ?? null,
+        photos: byUser.get(uid)!,
+      }));
+
+      return { photos, groups };
+    },
+  });
+
+  const allPhotos = data?.photos ?? [];
+  const groups = data?.groups ?? [];
 
   const itemSize = containerWidth > 0
     ? (containerWidth - GAP * (MAX_VISIBLE - 1)) / MAX_VISIBLE

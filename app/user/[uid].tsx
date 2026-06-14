@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View, Text, Image, ScrollView, Pressable, ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { getUserProfile } from '@/services/userService';
-import { UserProfile } from '@/types';
+import { userQueryKeys } from '@/services/queryKeys';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { sf, fonts } from '@/constants/theme';
 
@@ -14,21 +15,14 @@ const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 export default function UserProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
-    if (!uid) return;
-    getUserProfile(uid).then((result) => {
-      if (result) {
-        setProfile(result);
-      } else {
-        setNotFound(true);
-      }
-      setLoading(false);
-    });
-  }, [uid]);
+  const { data: profile, isLoading: loading, isError } = useQuery({
+    queryKey: userQueryKeys.profile(uid ?? ''),
+    queryFn: () => getUserProfile(uid!),
+    enabled: !!uid,
+  });
+
+  const notFound = isError || (!loading && !profile);
 
   if (loading) {
     return (

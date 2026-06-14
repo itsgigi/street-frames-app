@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, updateDoc, onSnapshot, getDocs, collection, where, query } from "@firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "@firebase/firestore";
 import { db } from "./firebaseConfig";
 import { UserProfile } from "@/types";
 
@@ -31,6 +31,15 @@ export async function getUserProfiles(uids: string[]): Promise<UserProfile[]> {
   return snaps
     .filter((snap) => snap.exists())
     .map((snap) => ({ id: snap.id, ...(snap.data() as Omit<UserProfile, "id">) }));
+}
+
+/**
+ * Fetches profiles for the given UIDs and returns them as a Map keyed by UID.
+ * Useful when you need to look up uploaders/participants by ID in a list.
+ */
+export async function getUserProfileMap(uids: string[]): Promise<Map<string, UserProfile>> {
+  const profiles = await getUserProfiles(uids);
+  return new Map(profiles.map((p) => [p.id, p]));
 }
 
 export function subscribeToUserProfile(
