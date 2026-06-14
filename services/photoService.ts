@@ -13,6 +13,7 @@ import {db} from '@/services/firebaseConfig';
 import {GalleryPhoto} from '@/types';
 import {uploadWalkImage} from '@/services/storageService';
 import {getWalkById} from '@/services/walkService';
+import {normalizeTags} from '@/services/tagUtils';
 
 const COLLECTION = 'photos';
 const MAX_PHOTOS_PER_USER_PER_WALK = 3;
@@ -39,9 +40,6 @@ interface UploadWalkPhotoInput {
   tags?: string[];
 }
 
-export function normalizeTags(tags: string[] = []): string[] {
-  return [...new Set(tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
-}
 
 function docToPhoto(id: string, data: FirestorePhotoDoc): GalleryPhoto {
   return {
