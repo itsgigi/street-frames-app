@@ -7,6 +7,7 @@ import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
 import { SectionHeader } from '../ui/SectionHeader';
 import { PhotoLightbox } from '../ui/PhotoLightbox';
+import { Avatar } from '../ui/Avatar';
 
 const GAP = 6;
 const MAX_VISIBLE = 4;
@@ -82,9 +83,10 @@ export function WalkGallery({ walkId, refreshKey = 0 }: WalkGalleryProps) {
                   {/* User header */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     {group.user?.profilePhoto ? (
-                      <Image
+                      <Avatar
                         source={{ uri: group.user.profilePhoto }}
-                        style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: sf.grayLight }}
+                        size={28}
+                        isVerified={group.user?.isVerified}
                       />
                     ) : (
                       <View style={{

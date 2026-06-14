@@ -8,6 +8,7 @@ import { getUserProfiles } from '@/services/userService';
 import { HeroCard } from '@/components/cards/HeroCard';
 import { PastCard } from '@/components/cards/PastCard';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/contexts/authContext';
 import { fonts, sf, cardBorder } from '@/constants/theme';
 import { Walk, UserProfile } from '@/types';
@@ -81,10 +82,13 @@ export default function HomeScreen() {
           STREET FRAMES
         </Text>
         <Pressable onPress={() => router.push('/(tabs)/profile')} hitSlop={12}>
-          <Image
-            source={{ uri: avatarUri }}
-            style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: sf.orange }}
-          />
+          <View style={{ borderRadius: 18, borderWidth: 2, borderColor: sf.orange, padding: 1 }}>
+            <Avatar
+              source={{ uri: avatarUri }}
+              size={32}
+              isVerified={userProfile?.isVerified}
+            />
+          </View>
         </Pressable>
       </View>
 
@@ -105,13 +109,11 @@ export default function HomeScreen() {
             </View>
           ) : latestWalk === null ? (
             <View style={{
-              marginHorizontal: 20, marginBottom: 20, borderRadius: 32,
-              height: 200, ...cardBorder,
-              backgroundColor: sf.grayLight,
+              marginHorizontal: 20, marginBottom: 20, paddingVertical: 40,
               alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>
-              <Text style={{ color: sf.grayDark, fontSize: 15, fontWeight: '600' }}>No upcoming walks</Text>
-              <Text style={{ color: sf.grayMid, fontSize: 13 }}>Check back soon</Text>
+              <Text style={{ color: sf.black, fontSize: 20, fontWeight: '600', fontFamily: fonts.heading }}>No upcoming walks yet</Text>
+              <Text style={{ color: sf.grayDark, fontSize: 16 }}>Stay tuned</Text>
             </View>
           ) : (
             <HeroCard

@@ -110,7 +110,7 @@ export default function EventDetailsScreen() {
         localUri: result.assets[0].uri,
         userId: user.uid,
         walkId,
-        tags: [],
+        tags: walk?.tags ?? [],
       });
       setUploadCount((c) => c + 1);
       Alert.alert('Uploaded', 'Your image was uploaded successfully.');

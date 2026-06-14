@@ -28,9 +28,11 @@ export async function getUserProfiles(uids: string[]): Promise<UserProfile[]> {
   const validUids = uids.filter((uid) => uid && uid.trim().length > 0);
   if (validUids.length === 0) return [];
   const snaps = await Promise.all(validUids.map((uid) => getDoc(doc(db, COLLECTION, uid))));
-  return snaps
-    .filter((snap) => snap.exists())
-    .map((snap) => ({ id: snap.id, ...(snap.data() as Omit<UserProfile, "id">) }));
+  return snaps.map((snap) =>
+    snap.exists()
+      ? { id: snap.id, ...(snap.data() as Omit<UserProfile, "id">) }
+      : { id: snap.id, name: '', handle: '', biography: '', profilePhoto: '' }
+  );
 }
 
 export function subscribeToUserProfile(

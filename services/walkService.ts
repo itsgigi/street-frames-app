@@ -1,9 +1,10 @@
 import {
-  collection, doc, getDoc, updateDoc, onSnapshot,
-  query, orderBy, limit, where, arrayUnion, arrayRemove, Timestamp,
+  collection, doc, getDoc, addDoc, updateDoc, onSnapshot,
+  query, orderBy, where, arrayUnion, arrayRemove, Timestamp,
 } from "@firebase/firestore";
 import { db } from "./firebaseConfig";
 import { Walk, Stop } from "@/types";
+import { normalizeTags } from "./photoService";
 
 const COLLECTION = "walks";
 
@@ -28,21 +29,21 @@ function docToWalk(id: string, data: Record<string, any>): Walk {
       : (data.date ?? new Date().toISOString()),
     stops: parseStops(data.stops ?? []),
     participantUids: data.participantUIDs ?? data.participantUids ?? [],
+    tags: data.tags ?? [],
   };
 }
 
-// Real-time subscription to the single latest walk (ordered by date desc)
+// Real-time subscription to the next upcoming walk (closest future date)
 export function subscribeToLatestWalk(
   callback: (walk: Walk | null) => void
 ): () => void {
-  const q = query(collection(db, COLLECTION), orderBy("date", "desc"), limit(1));
+  const q = query(collection(db, COLLECTION), orderBy("date", "asc"));
   return onSnapshot(q, (snapshot) => {
-    if (snapshot.empty) {
-      callback(null);
-    } else {
-      const snap = snapshot.docs[0];
-      callback(docToWalk(snap.id, snap.data()));
-    }
+    const now = new Date();
+    const upcoming = snapshot.docs
+      .map((d) => docToWalk(d.id, d.data()))
+      .find((w) => new Date(w.date) > now);
+    callback(upcoming ?? null);
   });
 }
 
@@ -59,6 +60,30 @@ export function subscribeToWalkById(
 export async function getWalkById(id: string): Promise<Walk | null> {
   const snap = await getDoc(doc(db, COLLECTION, id));
   return snap.exists() ? docToWalk(snap.id, snap.data()) : null;
+}
+
+export interface CreateWalkInput {
+  title: string;
+  coverImage: string;
+  location: string;
+  description: string;
+  date: string;
+  stops: Stop[];
+  tags: string[];
+}
+
+export async function createWalk(input: CreateWalkInput): Promise<string> {
+  const ref = await addDoc(collection(db, COLLECTION), {
+    title: input.title,
+    coverImage: input.coverImage,
+    location: input.location,
+    description: input.description,
+    date: input.date,
+    stops: input.stops,
+    tags: normalizeTags(input.tags),
+    participantUIDs: [],
+  });
+  return ref.id;
 }
 
 export async function joinWalk(walkId: string, uid: string): Promise<void> {
@@ -89,6 +114,29 @@ export function subscribeToUserWalks(
       .map((d) => docToWalk(d.id, d.data()))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     callback(walks);
+  });
+}
+
+// Real-time subscription to all walks, sorted newest-first.
+export function subscribeToAllWalks(
+  callback: (walks: Walk[]) => void
+): () => void {
+  const q = query(collection(db, COLLECTION), orderBy('date', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((d) => docToWalk(d.id, d.data())));
+  });
+}
+
+// Real-time subscription to the set of distinct tags across all walks.
+export function subscribeToAllTags(
+  callback: (tags: string[]) => void
+): () => void {
+  return onSnapshot(collection(db, COLLECTION), (snapshot) => {
+    const tags = new Set<string>();
+    snapshot.docs.forEach((d) => {
+      (d.data().tags ?? []).forEach((tag: string) => tags.add(tag));
+    });
+    callback([...tags].sort());
   });
 }
 
