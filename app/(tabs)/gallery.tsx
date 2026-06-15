@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import {
-  ScrollView, View, Text, Image, TouchableOpacity, Dimensions, ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { getGalleryByTag, getGlobalGallery } from '@/services/photoService';
-import { getUserProfiles } from '@/services/userService';
-import { subscribeToAllTags } from '@/services/walkService';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { PhotoLightbox } from '@/components/ui/PhotoLightbox';
-import { Avatar } from '@/components/ui/Avatar';
-import { GalleryPhoto, UserProfile } from '@/types';
-import { sf, cardBorder } from '@/constants/theme';
+import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, Dimensions, Image, ScrollView, Text, TouchableOpacity, View,} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {Ionicons} from '@expo/vector-icons';
+import {LinearGradient} from 'expo-linear-gradient';
+import {useQuery} from '@tanstack/react-query';
+import {getGalleryByTag, getGlobalGallery} from '@/services/photoService';
+import {getUserProfileMap} from '@/services/userService';
+import {galleryQueryKeys} from '@/services/queryKeys';
+import {subscribeToAllTags} from '@/services/walkService';
+import {ScreenHeader} from '@/components/ui/ScreenHeader';
+import {PhotoLightbox} from '@/components/ui/PhotoLightbox';
+import {Avatar} from '@/components/ui/Avatar';
+import {UserProfile} from '@/types';
+import {cardBorder, sf} from '@/constants/theme';
 
 const TILE_SIZE = (Dimensions.get('window').width - 48 - 8) / 2;
 
@@ -87,39 +87,28 @@ function FilterSelector({
 export default function GalleryScreen() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [tags, setTags] = useState<string[]>([]);
-  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
-  const [profileMap, setProfileMap] = useState<Map<string, UserProfile>>(new Map());
-  const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => subscribeToAllTags(setTags), []);
 
-  useEffect(() => {
-    let mounted = true;
+  const { data, isLoading: loading } = useQuery({
+    queryKey: activeCategory === 'all'
+      ? galleryQueryKeys.global(50)
+      : galleryQueryKeys.byTag(activeCategory, 50),
+    queryFn: async () => {
+      const photos = activeCategory === 'all'
+        ? await getGlobalGallery(50)
+        : await getGalleryByTag(activeCategory, 50);
 
-    const loadPhotos = async () => {
-      setLoading(true);
-      try {
-        const data = activeCategory === 'all'
-          ? await getGlobalGallery(50)
-          : await getGalleryByTag(activeCategory, 50);
-        if (!mounted) return;
-        setPhotos(data);
+      const uids = [...new Set(photos.map((p) => p.userId))];
+      const profileMap = await getUserProfileMap(uids);
 
-        const uids = [...new Set(data.map((p) => p.userId))];
-        const profiles = await getUserProfiles(uids);
-        if (mounted) setProfileMap(new Map(profiles.map((p) => [p.id, p])));
-      } catch (e) {
-        console.error('Failed to load gallery', e);
-        if (mounted) setPhotos([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
+      return { photos, profileMap };
+    },
+  });
 
-    loadPhotos();
-    return () => { mounted = false; };
-  }, [activeCategory]);
+  const photos = data?.photos ?? [];
+  const profileMap = data?.profileMap ?? new Map<string, UserProfile>();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>

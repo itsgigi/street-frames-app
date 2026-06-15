@@ -4,7 +4,7 @@ import {
 } from "@firebase/firestore";
 import { db } from "./firebaseConfig";
 import { Walk, Stop } from "@/types";
-import { normalizeTags } from "./photoService";
+import { normalizeTags } from "./tagUtils";
 
 const COLLECTION = "walks";
 

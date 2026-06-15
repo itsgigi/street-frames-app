@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useQueryClient } from '@tanstack/react-query';
 import { EventHeader } from '@/components/features/EventHeader';
 import { EventDescription } from '@/components/features/EventDescription';
 import { EventMap } from '@/components/features/EventMap';
@@ -13,6 +14,7 @@ import { getEventById } from '@/services/mockData';
 import { uploadWalkPhoto } from '@/services/photoService';
 import { subscribeToWalkById, joinWalk, leaveWalk } from '@/services/walkService';
 import { getUserProfiles } from '@/services/userService';
+import { galleryQueryKeys } from '@/services/queryKeys';
 import { useAuth } from '@/contexts/authContext';
 import { Walk, UserProfile } from '@/types';
 import { sf } from '@/constants/theme';
@@ -22,6 +24,7 @@ export default function EventDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Try mock data first — if found, it's a past event
   const mockEvent = getEventById(id ?? '');
@@ -31,7 +34,6 @@ export default function EventDetailsScreen() {
   const [participants, setParticipants] = useState<UserProfile[]>([]);
   const [joining, setJoining] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadCount, setUploadCount] = useState(0);
 
   // Track previous uid list to avoid redundant fetches
   const prevUidsRef = useRef<string>('');
@@ -112,7 +114,9 @@ export default function EventDetailsScreen() {
         walkId,
         tags: walk?.tags ?? [],
       });
-      setUploadCount((c) => c + 1);
+      // Invalidate gallery caches so new photo appears immediately
+      void queryClient.invalidateQueries({ queryKey: galleryQueryKeys.walk(walkId) });
+      void queryClient.invalidateQueries({ queryKey: galleryQueryKeys.all });
       Alert.alert('Uploaded', 'Your image was uploaded successfully.');
     } catch {
       Alert.alert('Upload failed', 'Unable to upload right now. Please try again.');
@@ -144,7 +148,7 @@ export default function EventDetailsScreen() {
               <EventDescription description={mockEvent.description} />
             </View>
             <View style={shadow}>
-              <WalkGallery walkId={mockEvent.id} refreshKey={uploadCount} />
+              <WalkGallery walkId={mockEvent.id} />
             </View>
             <View style={shadow}>
               <ParticipantsList participants={[]} />
@@ -206,7 +210,7 @@ export default function EventDetailsScreen() {
             <EventDescription description={walk.description} />
           </View>
           <View style={shadow}>
-            {isPast ? <WalkGallery walkId={walk.id} refreshKey={uploadCount} /> : <EventMap stops={walk.stops} />}
+            {isPast ? <WalkGallery walkId={walk.id} /> : <EventMap stops={walk.stops} />}
           </View>
           <View style={shadow}>
             <ParticipantsList participants={participants} />

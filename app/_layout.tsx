@@ -8,6 +8,7 @@ import { View, ActivityIndicator } from 'react-native';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {AuthProvider, useAuth} from '@/contexts/authContext';
+import {QueryProvider} from '@/contexts/queryContext';
 import { useFonts, ChauPhilomeneOne_400Regular } from '@expo-google-fonts/chau-philomene-one';
 import { sf } from '@/constants/theme';
 
@@ -19,9 +20,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <InternalLayout />
-      </AuthProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <InternalLayout />
+        </AuthProvider>
+      </QueryProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

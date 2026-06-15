@@ -1,17 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { subscribeToLatestWalk, subscribeToPastWalks } from '@/services/walkService';
-import { getUserProfiles } from '@/services/userService';
-import { HeroCard } from '@/components/cards/HeroCard';
-import { PastCard } from '@/components/cards/PastCard';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { Avatar } from '@/components/ui/Avatar';
-import { useAuth } from '@/contexts/authContext';
-import { fonts, sf, cardBorder } from '@/constants/theme';
-import { Walk, UserProfile } from '@/types';
+import React, {useEffect, useRef, useState} from 'react';
+import {ActivityIndicator, Image, Pressable, ScrollView, Text, View} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useRouter} from 'expo-router';
+import {LinearGradient} from 'expo-linear-gradient';
+import {subscribeToLatestWalk, subscribeToPastWalks} from '@/services/walkService';
+import {getUserProfiles} from '@/services/userService';
+import {HeroCard} from '@/components/cards/HeroCard';
+import {PastCard} from '@/components/cards/PastCard';
+import {ScreenHeader} from '@/components/ui/ScreenHeader';
+import {Avatar } from '@/components/ui/Avatar';
+import {useAuth} from '@/contexts/authContext';
+import {cardBorder, fonts, sf} from '@/constants/theme';
+import {UserProfile, Walk} from '@/types';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
