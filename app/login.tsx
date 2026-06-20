@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ActivityIndicator } from 'react-native';
 import { FirebaseError } from 'firebase/app';
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { imageUriToBase64 } from '@/services/storageService';
 import { sf } from '@/constants/theme';
@@ -20,6 +21,14 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const { signIn, signUp } = useAuthMethods();
+
+  const handleForgotPassword = () => {
+    router.push(
+      email.trim()
+        ? { pathname: '/forgot-password', params: { email: email.trim() } }
+        : '/forgot-password'
+    );
+  };
 
   const handlePickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -179,6 +188,12 @@ export default function LoginScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      {isLogin && (
+        <TouchableOpacity onPress={handleForgotPassword} style={{ alignSelf: 'flex-end', marginTop: -8, marginBottom: 16 }}>
+          <Text style={styles.link}>Forgot password?</Text>
+        </TouchableOpacity>
+      )}
 
       {!isLogin && (
         <TextInput

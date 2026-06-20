@@ -56,6 +56,7 @@ const InternalLayout = () => {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
       <Stack.Screen name="edit-profile" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="user/[uid]" options={{ headerShown: false }} />
     </Stack>

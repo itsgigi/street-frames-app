@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from "@/services/firebaseConfig";
 import { createUserProfile } from "@/services/userService";
 
@@ -30,5 +30,9 @@ export function useAuthMethods() {
     }
   };
 
-  return { signUp, signIn, logout };
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  return { signUp, signIn, logout, resetPassword };
 }
