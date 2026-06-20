@@ -37,7 +37,7 @@ export default function ForgotPasswordScreen() {
             setError('Invalid email address.');
             break;
           case 'auth/user-not-found':
-            setError('No account found with this email.');
+            setError('Could not send reset email. Try again.');
             break;
           default:
             setError('Could not send reset email. Try again.');
