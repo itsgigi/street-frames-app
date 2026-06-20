@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, ActivityIndicator } from 'react-native';
 import { FirebaseError } from 'firebase/app';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
