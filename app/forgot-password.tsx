@@ -12,9 +12,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 
 export default function ForgotPasswordScreen() {
-  const { email: prefilled } = useLocalSearchParams<{ email?: string }>();
+  const { email: emailParam } = useLocalSearchParams<{ email?: string | string[] }>();
+  const prefilled = Array.isArray(emailParam) ? emailParam[0] : emailParam;
   const [email, setEmail] = useState(prefilled ?? '');
-  const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
