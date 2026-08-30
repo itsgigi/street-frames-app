@@ -16,7 +16,7 @@ import {getWalkById} from '@/services/walkService';
 import {normalizeTags} from '@/services/tagUtils';
 
 const COLLECTION = 'photos';
-const MAX_PHOTOS_PER_USER_PER_WALK = 3;
+export const MAX_PHOTOS_PER_USER_PER_WALK = 3;
 
 interface FirestorePhotoDoc {
   imageUrl: string;
