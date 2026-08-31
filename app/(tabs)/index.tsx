@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Image, Pressable, ScrollView, Text, View} from 'react-native';
+import {ActivityIndicator, Pressable, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRouter} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -8,16 +8,11 @@ import {getUserProfiles} from '@/services/userService';
 import {HeroCard} from '@/components/cards/HeroCard';
 import {PastCard} from '@/components/cards/PastCard';
 import {ScreenHeader} from '@/components/ui/ScreenHeader';
-import {Avatar } from '@/components/ui/Avatar';
-import {useAuth} from '@/contexts/authContext';
 import {cardBorder, fonts, sf} from '@/constants/theme';
 import {UserProfile, Walk} from '@/types';
 
-const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
-
 export default function HomeScreen() {
   const router = useRouter();
-  const { userProfile } = useAuth();
   const [latestWalk, setLatestWalk] = useState<Walk | null | undefined>(undefined);
   const [previewProfiles, setPreviewProfiles] = useState<UserProfile[]>([]);
   const [pastWalks, setPastWalks] = useState<Walk[] | undefined>(undefined);
@@ -50,47 +45,12 @@ export default function HomeScreen() {
     };
   }, []);
 
-  const avatarUri = userProfile?.profilePhoto || PLACEHOLDER_AVATAR;
   const validParticipantUids = latestWalk
     ? latestWalk.participantUids.filter(uid => uid?.trim().length > 0)
     : [];
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: sf.cream }}>
-
-      {/* Header */}
-      <View style={{
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 20, paddingVertical: 18,
-      }}>
-        <LinearGradient
-          colors={[sf.orange, 'rgba(242, 220, 194,1)']}
-          locations={[0, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            position: 'absolute', left: 0, bottom: 10, width: '100%', height: 52, zIndex: 0,
-            pointerEvents: 'none',
-          }}
-        />
-        <Image
-          source={require('@/assets/images/sf_logo.jpg')}
-          style={{ width: 32, height: 32, borderRadius: 8 }}
-          resizeMode="contain"
-        />
-        <Text style={{ fontSize: 22, fontWeight: '700', color: sf.black, letterSpacing: 1, fontFamily: fonts.heading }}>
-          STREET FRAMES
-        </Text>
-        <Pressable onPress={() => router.push('/(tabs)/profile')} hitSlop={12}>
-          <View style={{ borderRadius: 18, borderWidth: 2, borderColor: sf.orange, padding: 1 }}>
-            <Avatar
-              source={{ uri: avatarUri }}
-              size={32}
-              isVerified={userProfile?.isVerified}
-            />
-          </View>
-        </Pressable>
-      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
 
