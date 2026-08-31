@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, Pressable, ScrollView, Text, View} from 'react-native';
+import {RefreshableScrollView} from '@/components/ui/RefreshableScrollView';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useRouter} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -52,7 +53,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: sf.cream }}>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
+      <RefreshableScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
 
         {/* Upcoming Walk */}
         <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 14 }} />
@@ -146,7 +147,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

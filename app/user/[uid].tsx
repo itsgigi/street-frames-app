@@ -1,23 +1,22 @@
 import React from 'react';
-import {
-  View, Text, Image, ScrollView, Pressable, ActivityIndicator, Share,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { getUserProfile } from '@/services/userService';
-import { userQueryKeys } from '@/services/queryKeys';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { Avatar } from '@/components/ui/Avatar';
-import { sf, fonts } from '@/constants/theme';
+import {ActivityIndicator, Pressable, Share, Text, View,} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {Ionicons} from '@expo/vector-icons';
+import {router, useLocalSearchParams} from 'expo-router';
+import {useQuery} from '@tanstack/react-query';
+import {getUserProfile} from '@/services/userService';
+import {userQueryKeys} from '@/services/queryKeys';
+import {ScreenHeader} from '@/components/ui/ScreenHeader';
+import {Avatar} from '@/components/ui/Avatar';
+import {RefreshableScrollView} from '@/components/ui/RefreshableScrollView';
+import {fonts, sf} from '@/constants/theme';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 export default function UserProfileScreen() {
   const { uid } = useLocalSearchParams<{ uid: string }>();
 
-  const { data: profile, isLoading: loading, isError } = useQuery({
+  const { data: profile, isLoading: loading, isError, refetch } = useQuery({
     queryKey: userQueryKeys.profile(uid ?? ''),
     queryFn: () => getUserProfile(uid!),
     enabled: !!uid,
@@ -78,7 +77,7 @@ export default function UserProfileScreen() {
         }
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
+      <RefreshableScrollView onRefresh={refetch} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
         <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 24 }}>
           <View style={{
             width: 96, height: 96, borderRadius: 48,
@@ -108,7 +107,7 @@ export default function UserProfileScreen() {
             </Text>
           )}
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

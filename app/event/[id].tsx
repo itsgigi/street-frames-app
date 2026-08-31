@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, Share, Alert, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Share, Alert, Modal, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,6 +10,7 @@ import { EventDescription } from '@/components/features/EventDescription';
 import { EventMap } from '@/components/features/EventMap';
 import { ParticipantsList } from '@/components/features/ParticipantsList';
 import { WalkGallery } from '@/components/features/WalkGallery';
+import { RefreshableScrollView } from '@/components/ui/RefreshableScrollView';
 import { getEventById } from '@/services/mockData';
 import { getWalkGallery, MAX_PHOTOS_PER_USER_PER_WALK, uploadWalkPhoto } from '@/services/photoService';
 import { subscribeToWalkById, joinWalk, leaveWalk } from '@/services/walkService';
@@ -41,7 +42,7 @@ export default function EventDetailsScreen() {
   const prevUidsRef = useRef<string>('');
 
   // Shares its cache with WalkGallery's query (same key + queryFn shape), so this adds no extra fetch.
-  const { data: galleryPhotos } = useQuery({
+  const { data: galleryPhotos, refetch: refetchGallery } = useQuery({
     queryKey: galleryQueryKeys.walk(id ?? ''),
     queryFn: () => getWalkGallery(id ?? ''),
     enabled: !mockEvent && !!id,
@@ -198,7 +199,7 @@ export default function EventDetailsScreen() {
     const joinedMockEvent = !!user;
     return (
       <View style={{ flex: 1, backgroundColor: sf.cream }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        <RefreshableScrollView onRefresh={refetchGallery} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
           <EventHeader
             title={mockEvent.title}
             date={mockEvent.date}
@@ -221,7 +222,7 @@ export default function EventDetailsScreen() {
               <ParticipantsList participants={[]} />
             </View>
           </View>
-        </ScrollView>
+        </RefreshableScrollView>
         {isUpcoming && <JoinBar onPress={() => {}} joining={false} isPast={false} joined={false} insetBottom={insets.bottom} />}
         <UploadBar
           onPress={() => handlePickImages(mockEvent.id, joinedMockEvent, limitReached)}
@@ -268,7 +269,7 @@ export default function EventDetailsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: sf.cream }}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <RefreshableScrollView onRefresh={refetchGallery} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <EventHeader
           title={walk.title}
           date={walk.date}
@@ -291,7 +292,7 @@ export default function EventDetailsScreen() {
             <ParticipantsList participants={participants} />
           </View>
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
 
       {isPast ? (
         <UploadBar
