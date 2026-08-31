@@ -75,7 +75,7 @@ export const fonts = {
 
 /** Shared thin border applied to all image cards/tiles across the app */
 export const cardBorder = {
-  borderWidth: 2,
+  borderWidth: 0,
   borderColor: 'rgba(253, 247, 242, 0.85)',
 } as const;
 

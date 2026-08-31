@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { subscribeToAllWalks } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { RefreshableScrollView } from '@/components/ui/RefreshableScrollView';
 import { WalkCard } from '@/components/features/WalkCard';
 import { sf } from '@/constants/theme';
 import { Walk } from '@/types';
@@ -45,7 +46,7 @@ export default function WalksScreen() {
           <Text style={{ color: sf.black, fontSize: 18, fontWeight: '600' }}>No walks yet</Text>
         </View>
       ) : (
-        <ScrollView
+        <RefreshableScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, gap: 16, paddingBottom: 40, shadowColor: 'black', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.2, shadowRadius: 5 }}
         >
@@ -57,7 +58,7 @@ export default function WalksScreen() {
               onPress={() => router.push(`/event/${walk.id}`)}
             />
           ))}
-        </ScrollView>
+        </RefreshableScrollView>
       )}
     </SafeAreaView>
   );

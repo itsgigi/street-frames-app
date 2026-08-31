@@ -1,12 +1,16 @@
-import { Tabs } from 'expo-router';
-import { Platform, View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { sf } from '@/constants/theme';
+import {Tabs} from 'expo-router';
+import {Platform, StyleSheet, View} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
+import {BlurView} from 'expo-blur';
+import {sf} from '@/constants/theme';
+import {Avatar} from '@/components/ui/Avatar';
+import {useAuth} from '@/contexts/authContext';
+
+const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
-function TabIcon({ name, focusedName, focused, color }: {
+function TabIcon({name, focusedName, focused, color}: {
   name: IoniconsName; focusedName: IoniconsName; focused: boolean; color: string;
 }) {
   return (
@@ -21,9 +25,23 @@ function TabIcon({ name, focusedName, focused, color }: {
   );
 }
 
+function ProfileTabIcon({focused}: { focused: boolean }) {
+  const {userProfile} = useAuth();
+  const avatarUri = userProfile?.profilePhoto || PLACEHOLDER_AVATAR;
+
+  return (<View style={{
+      borderRadius: 999, borderWidth: 2, borderColor: focused ? sf.orange : 'transparent', padding: 1, marginTop: 8,
+    }}>
+      <Avatar
+        source={{uri: avatarUri}}
+        size={34}
+        isVerified={userProfile?.isVerified}
+      />
+    </View>);
+}
+
 export default function TabLayout() {
-  return (
-    <Tabs
+  return (<Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: sf.orange,
@@ -39,8 +57,7 @@ export default function TabLayout() {
               intensity={88}
               style={StyleSheet.absoluteFillObject}
             />
-          </View>
-        ),
+          </View>),
         tabBarStyle: {
           position: 'absolute',
           bottom: Platform.OS === 'ios' ? 28 : 16,
@@ -54,7 +71,7 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
+          shadowOffset: {width: 0, height: 8},
           shadowOpacity: 0.35,
           shadowRadius: 20,
           elevation: 16,
@@ -71,29 +88,23 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Discover',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="home-outline" focusedName="home" focused={focused} color={color} />
-          ),
+          tabBarIcon: ({color, focused}) => (
+            <TabIcon name="home-outline" focusedName="home" focused={focused} color={color}/>),
         }}
       />
       <Tabs.Screen
         name="gallery"
         options={{
           title: 'Gallery',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="images-outline" focusedName="images" focused={focused} color={color} />
-          ),
+          tabBarIcon: ({color, focused}) => (
+            <TabIcon name="images-outline" focusedName="images" focused={focused} color={color}/>),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="person-outline" focusedName="person" focused={focused} color={color} />
-          ),
+          title: '', tabBarIcon: ({focused}) => (<ProfileTabIcon focused={focused}/>),
         }}
       />
-    </Tabs>
-  );
+    </Tabs>);
 }

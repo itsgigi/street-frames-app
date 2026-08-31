@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Image as SvgImage, Path } from 'react-native-svg';
-import { sf, fonts } from '@/constants/theme';
+import { sf, fonts, cardBorder } from '@/constants/theme';
 
 // Original design viewBox
 const VB_W = 390;
@@ -44,13 +44,13 @@ export function HeroCard({ imageUri, title, date, onPress }: HeroCardProps) {
           </ClipPath>
         </Defs>
         {/* Stroke drawn UNDER image — inner half covered by image, only outer border visible */}
-        <Path d="M 42 70 L 130 70 L 130 208 A 32 32 0 0 1 98 240 L 42 240 A 32 32 0 0 1 10 208 L 10 102 A 32 32 0 0 1 42 70 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
-        <Path d="M 162 10 L 348 10 A 32 32 0 0 1 380 42 L 380 138 A 32 32 0 0 1 348 170 L 130 170 L 130 42 A 32 32 0 0 1 162 10 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
+        <Path d="M 42 70 L 130 70 L 130 208 A 32 32 0 0 1 98 240 L 42 240 A 32 32 0 0 1 10 208 L 10 102 A 32 32 0 0 1 42 70 Z" fill="none" stroke={cardBorder.borderColor} strokeWidth={cardBorder.borderWidth} />
+        <Path d="M 162 10 L 348 10 A 32 32 0 0 1 380 42 L 380 138 A 32 32 0 0 1 348 170 L 130 170 L 130 42 A 32 32 0 0 1 162 10 Z" fill="none" stroke={cardBorder.borderColor} strokeWidth={cardBorder.borderWidth} />
         <G transform="translate(130, 202)">
-          <Path d="M 0 0 C 0 -23.872 5.76 -32 32 -32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
+          <Path d="M 0 0 C 0 -23.872 5.76 -32 32 -32 H 0 Z" fill="none" stroke={cardBorder.borderColor} strokeWidth={cardBorder.borderWidth} />
         </G>
         <G transform="translate(130, 38)">
-          <Path d="M 0 0 C 0 23.872 -5.76 32 -32 32 H 0 Z" fill="none" stroke={sf.creamLight} strokeWidth={4} />
+          <Path d="M 0 0 C 0 23.872 -5.76 32 -32 32 H 0 Z" fill="none" stroke={cardBorder.borderColor} strokeWidth={cardBorder.borderWidth} />
         </G>
         <SvgImage
           href={imageUri}
@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
     top: 8,
     left: 8,
     backgroundColor: 'rgba(191, 91, 33,0.8)',
-    borderWidth: 2,
-    borderColor: sf.creamLight,
+    borderWidth: cardBorder.borderWidth,
+    borderColor: cardBorder.borderColor,
     shadowColor: 'black', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5
   },
   dateText: {

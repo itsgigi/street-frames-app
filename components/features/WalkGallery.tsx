@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { getWalkGallery } from '@/services/photoService';
 import { getUserProfileMap } from '@/services/userService';
-import { galleryQueryKeys } from '@/services/queryKeys';
+import { galleryQueryKeys, userQueryKeys } from '@/services/queryKeys';
 import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
 import { SectionHeader } from '../ui/SectionHeader';
@@ -28,33 +28,38 @@ export function WalkGallery({ walkId }: WalkGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const { data, isLoading: loading } = useQuery({
+  const { data: allPhotos = [], isLoading: loadingPhotos } = useQuery({
     queryKey: galleryQueryKeys.walk(walkId),
-    queryFn: async () => {
-      const photos = await getWalkGallery(walkId);
-
-      const byUser = new Map<string, GalleryPhoto[]>();
-      for (const p of photos) {
-        const arr = byUser.get(p.userId) ?? [];
-        arr.push(p);
-        byUser.set(p.userId, arr);
-      }
-
-      const uids = Array.from(byUser.keys());
-      const profileMap = await getUserProfileMap(uids);
-
-      const groups: UserGroup[] = uids.map((uid) => ({
-        userId: uid,
-        user: profileMap.get(uid) ?? null,
-        photos: byUser.get(uid)!,
-      }));
-
-      return { photos, groups };
-    },
+    queryFn: () => getWalkGallery(walkId),
   });
 
-  const allPhotos = data?.photos ?? [];
-  const groups = data?.groups ?? [];
+  const uids = useMemo(
+    () => Array.from(new Set(allPhotos.map((p) => p.userId))),
+    [allPhotos],
+  );
+
+  const { data: profileMap, isLoading: loadingProfiles } = useQuery({
+    queryKey: userQueryKeys.profiles(uids),
+    queryFn: () => getUserProfileMap(uids),
+    enabled: uids.length > 0,
+  });
+
+  const loading = loadingPhotos || (uids.length > 0 && loadingProfiles);
+
+  const groups: UserGroup[] = useMemo(() => {
+    const byUser = new Map<string, GalleryPhoto[]>();
+    for (const p of allPhotos) {
+      const arr = byUser.get(p.userId) ?? [];
+      arr.push(p);
+      byUser.set(p.userId, arr);
+    }
+
+    return uids.map((uid) => ({
+      userId: uid,
+      user: profileMap?.get(uid) ?? null,
+      photos: byUser.get(uid)!,
+    }));
+  }, [allPhotos, uids, profileMap]);
 
   const itemSize = containerWidth > 0
     ? (containerWidth - GAP * (MAX_VISIBLE - 1)) / MAX_VISIBLE

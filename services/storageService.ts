@@ -5,6 +5,7 @@ import { getSupabaseClient } from '@/services/supabaseConfig';
 
 const MAX_DIMENSION = 400;
 const PHOTOS_BUCKET = 'photos';
+const MAX_IMAGE_SIZE_BYTES = 13 * 1024 * 1024; // 13MB
 
 interface UploadWalkImageInput {
   localUri: string;
@@ -49,6 +50,11 @@ export async function uploadWalkImage({
 }: UploadWalkImageInput): Promise<UploadWalkImageResult> {
   const supabase = getSupabaseClient();
   const imagePath = buildWalkImagePath(walkId, userId, timestamp);
+
+  const fileInfo = await FileSystem.getInfoAsync(localUri);
+  if (fileInfo.exists && fileInfo.size > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error('This image is larger than 13MB. Please choose a smaller photo.');
+  }
 
   const base64 = await FileSystem.readAsStringAsync(localUri, {
     encoding: FileSystem.EncodingType.Base64,

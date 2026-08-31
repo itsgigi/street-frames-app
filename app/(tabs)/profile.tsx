@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ScrollView, View, Text, Image, TouchableOpacity, Pressable,
+  View, Text, Image, TouchableOpacity, Pressable,
   ActivityIndicator, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { galleryQueryKeys } from '@/services/queryKeys';
 import { subscribeToUserWalks } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Avatar } from '@/components/ui/Avatar';
+import { RefreshableScrollView } from '@/components/ui/RefreshableScrollView';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
@@ -33,7 +34,7 @@ export default function ProfileScreen() {
     return unsub;
   }, [user]);
 
-  const { data: userPhotos = [] } = useQuery({
+  const { data: userPhotos = [], refetch: refetchPhotos } = useQuery({
     queryKey: galleryQueryKeys.byUser(user?.uid ?? '', 6),
     queryFn: () => getPhotosByUser(user!.uid, 6),
     enabled: !!user,
@@ -113,7 +114,7 @@ export default function ProfileScreen() {
         />
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+      <RefreshableScrollView onRefresh={refetchPhotos} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
 
         {/* ── Avatar + name ── */}
         <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 20 }}>
@@ -326,7 +327,7 @@ export default function ProfileScreen() {
         )}
 
 
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

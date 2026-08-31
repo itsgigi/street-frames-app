@@ -11,6 +11,7 @@ import {subscribeToAllTags} from '@/services/walkService';
 import {ScreenHeader} from '@/components/ui/ScreenHeader';
 import {PhotoLightbox} from '@/components/ui/PhotoLightbox';
 import {Avatar} from '@/components/ui/Avatar';
+import {RefreshableScrollView} from '@/components/ui/RefreshableScrollView';
 import {UserProfile} from '@/types';
 import {cardBorder, sf} from '@/constants/theme';
 
@@ -91,7 +92,7 @@ export default function GalleryScreen() {
 
   useEffect(() => subscribeToAllTags(setTags), []);
 
-  const { data, isLoading: loading } = useQuery({
+  const { data, isLoading: loading, refetch } = useQuery({
     queryKey: activeCategory === 'all'
       ? galleryQueryKeys.global(50)
       : galleryQueryKeys.byTag(activeCategory, 50),
@@ -121,7 +122,7 @@ export default function GalleryScreen() {
       <FilterSelector tags={tags} activeCategory={activeCategory} onSelect={setActiveCategory} />
 
       {/* ── Photo Grid ── */}
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <RefreshableScrollView onRefresh={refetch} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         {loading ? (
           <View style={{ paddingTop: 40, alignItems: 'center' }}>
             <ActivityIndicator size="large" color={sf.orange} />
@@ -171,7 +172,7 @@ export default function GalleryScreen() {
             )}
           </View>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
       <PhotoLightbox
         photos={photos}
         selectedIndex={selectedIndex}
