@@ -148,11 +148,11 @@ export async function deletePhoto(photoId: string, requestingUserId: string): Pr
     throw new Error('You can only delete your own photos');
   }
 
+  await deleteDoc(photoRef);
+
   if (data.storagePath) {
     await deleteWalkImage(data.storagePath);
   }
-
-  await deleteDoc(photoRef);
 }
 
 export async function getWalkGallery(walkId: string): Promise<GalleryPhoto[]> {
