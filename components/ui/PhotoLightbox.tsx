@@ -5,16 +5,30 @@ import { Ionicons } from '@expo/vector-icons';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface PhotoLightboxProps {
-  photos: { id: string; imageUrl: string }[];
+  photos: { id: string; imageUrl: string; userId?: string }[];
   selectedIndex: number | null;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
+  onDelete?: (photoId: string) => void;
+  currentUserId?: string;
+  deleting?: boolean;
 }
 
-export function PhotoLightbox({ photos, selectedIndex, onClose, onPrev, onNext }: PhotoLightboxProps) {
+export function PhotoLightbox({
+  photos,
+  selectedIndex,
+  onClose,
+  onPrev,
+  onNext,
+  onDelete,
+  currentUserId,
+  deleting,
+}: PhotoLightboxProps) {
   const canPrev = selectedIndex !== null && selectedIndex > 0;
   const canNext = selectedIndex !== null && selectedIndex < photos.length - 1;
+  const selectedPhoto = selectedIndex !== null ? photos[selectedIndex] : null;
+  const canDelete = !!onDelete && !!selectedPhoto && selectedPhoto.userId === currentUserId;
 
   return (
     <Modal visible={selectedIndex !== null} transparent animationType="fade">
@@ -25,6 +39,16 @@ export function PhotoLightbox({ photos, selectedIndex, onClose, onPrev, onNext }
         >
           <Ionicons name="close" size={28} color="white" />
         </TouchableOpacity>
+
+        {canDelete && (
+          <TouchableOpacity
+            onPress={() => selectedPhoto && onDelete?.(selectedPhoto.id)}
+            disabled={deleting}
+            style={{ position: 'absolute', top: 56, left: 20, zIndex: 10, padding: 8, opacity: deleting ? 0.5 : 1 }}
+          >
+            <Ionicons name="trash-outline" size={24} color="white" />
+          </TouchableOpacity>
+        )}
 
         {selectedIndex !== null && photos[selectedIndex] && (
           <Image

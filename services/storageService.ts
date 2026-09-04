@@ -88,3 +88,13 @@ export async function uploadWalkImage({
   };
 }
 
+export async function deleteWalkImage(storagePath: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.storage.from(PHOTOS_BUCKET).remove([storagePath]);
+
+  if (error) {
+    console.error('Photo delete failed:', error);
+    throw new Error(`Photo delete failed: ${error.message}`);
+  }
+}
+

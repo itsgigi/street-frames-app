@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { getWalkGallery } from '@/services/photoService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getWalkGallery, deletePhoto } from '@/services/photoService';
 import { getUserProfileMap } from '@/services/userService';
 import { galleryQueryKeys, userQueryKeys } from '@/services/queryKeys';
 import { GalleryPhoto, UserProfile } from '@/types';
 import { sf, cardBorder } from '@/constants/theme';
+import { useAuth } from '@/contexts/authContext';
 import { SectionHeader } from '../ui/SectionHeader';
 import { PhotoLightbox } from '../ui/PhotoLightbox';
 import { Avatar } from '../ui/Avatar';
@@ -27,6 +28,8 @@ interface UserGroup {
 export function WalkGallery({ walkId }: WalkGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: allPhotos = [], isLoading: loadingPhotos } = useQuery({
     queryKey: galleryQueryKeys.walk(walkId),
@@ -60,6 +63,28 @@ export function WalkGallery({ walkId }: WalkGalleryProps) {
       photos: byUser.get(uid)!,
     }));
   }, [allPhotos, uids, profileMap]);
+
+  const deleteMutation = useMutation({
+    mutationFn: (photoId: string) => {
+      if (!user) throw new Error('Sign in required');
+      return deletePhoto(photoId, user.uid);
+    },
+    onSuccess: () => {
+      setSelectedIndex(null);
+      void queryClient.invalidateQueries({ queryKey: galleryQueryKeys.walk(walkId) });
+      void queryClient.invalidateQueries({ queryKey: galleryQueryKeys.all });
+    },
+    onError: () => {
+      Alert.alert('Delete failed', 'Unable to delete photo right now. Please try again.');
+    },
+  });
+
+  const handleDeleteRequest = (photoId: string) => {
+    Alert.alert('Delete photo', 'This photo will be permanently removed.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteMutation.mutate(photoId) },
+    ]);
+  };
 
   const itemSize = containerWidth > 0
     ? (containerWidth - GAP * (MAX_VISIBLE - 1)) / MAX_VISIBLE
@@ -164,6 +189,9 @@ export function WalkGallery({ walkId }: WalkGalleryProps) {
         onClose={() => setSelectedIndex(null)}
         onPrev={() => setSelectedIndex((i) => (i !== null ? i - 1 : i))}
         onNext={() => setSelectedIndex((i) => (i !== null ? i + 1 : i))}
+        onDelete={handleDeleteRequest}
+        currentUserId={user?.uid}
+        deleting={deleteMutation.isPending}
       />
     </View>
   );

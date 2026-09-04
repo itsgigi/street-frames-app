@@ -1,6 +1,9 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -11,7 +14,7 @@ import {
 } from '@firebase/firestore';
 import {db} from '@/services/firebaseConfig';
 import {GalleryPhoto} from '@/types';
-import {uploadWalkImage} from '@/services/storageService';
+import {uploadWalkImage, deleteWalkImage} from '@/services/storageService';
 import {getWalkById} from '@/services/walkService';
 import {normalizeTags} from '@/services/tagUtils';
 
@@ -22,6 +25,7 @@ interface FirestorePhotoDoc {
   imageUrl: string;
   userId: string;
   walkId: string;
+  storagePath?: string;
   createdAt?: Timestamp;
   tags: string[];
 }
@@ -30,6 +34,7 @@ interface CreatePhotoMetadataInput {
   imageUrl: string;
   userId: string;
   walkId: string;
+  storagePath?: string;
   tags?: string[];
 }
 
@@ -47,6 +52,7 @@ function docToPhoto(id: string, data: FirestorePhotoDoc): GalleryPhoto {
     imageUrl: data.imageUrl,
     userId: data.userId,
     walkId: data.walkId,
+    storagePath: data.storagePath,
     tags: data.tags ?? [],
     createdAt: data.createdAt instanceof Timestamp
       ? data.createdAt.toDate().toISOString()
@@ -89,12 +95,14 @@ export async function createPhotoMetadata({
   imageUrl,
   userId,
   walkId,
+  storagePath,
   tags = [],
 }: CreatePhotoMetadataInput): Promise<string> {
   const payload: Omit<FirestorePhotoDoc, 'createdAt'> & { createdAt: ReturnType<typeof serverTimestamp> } = {
     imageUrl,
     userId,
     walkId,
+    storagePath,
     tags: normalizeTags(tags),
     createdAt: serverTimestamp(),
   };
@@ -112,18 +120,39 @@ export async function uploadWalkPhoto({
   await assertWalkParticipant(userId, walkId);
   await assertPhotoLimitNotExceeded(userId, walkId);
 
-  const { imageUrl } = await uploadWalkImage({ localUri, userId, walkId });
+  const { imageUrl, storagePath } = await uploadWalkImage({ localUri, userId, walkId });
 
-  const id = await createPhotoMetadata({ imageUrl, userId, walkId, tags });
+  const id = await createPhotoMetadata({ imageUrl, userId, walkId, storagePath, tags });
 
   return {
     id,
     imageUrl,
     userId,
     walkId,
+    storagePath,
     tags: normalizeTags(tags),
     createdAt: new Date().toISOString(),
   };
+}
+
+export async function deletePhoto(photoId: string, requestingUserId: string): Promise<void> {
+  const photoRef = doc(db, COLLECTION, photoId);
+  const snapshot = await getDoc(photoRef);
+
+  if (!snapshot.exists()) {
+    throw new Error('Photo not found');
+  }
+
+  const data = snapshot.data() as FirestorePhotoDoc;
+  if (data.userId !== requestingUserId) {
+    throw new Error('You can only delete your own photos');
+  }
+
+  await deleteDoc(photoRef);
+
+  if (data.storagePath) {
+    await deleteWalkImage(data.storagePath);
+  }
 }
 
 export async function getWalkGallery(walkId: string): Promise<GalleryPhoto[]> {

@@ -31,6 +31,7 @@ export interface Photo {
 export interface GalleryPhoto extends Photo {
   userId: string;
   walkId: string;
+  storagePath?: string;
   createdAt?: string;
   tags: string[];
 }
