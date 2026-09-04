@@ -2,7 +2,7 @@
   "expo": {
     "name": "street-frame",
     "slug": "street-frame",
-    "version": "0.0.2",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/sf_logo.jpg",
     "scheme": "streetframe",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.itsgigiagain.streetframe",
-      "buildNumber": "2",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Street Frame uses your photo library to set your profile picture."
