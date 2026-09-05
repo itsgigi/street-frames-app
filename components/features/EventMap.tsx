@@ -79,7 +79,7 @@ export const EventMap: React.FC<EventMapProps> = ({ stops }) => {
       {mapsAvailable ? (
         <MapView
           ref={mapRef}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           initialRegion={overviewRegion(stops)}
           mapType="mutedStandard"
           showsUserLocation={false}
@@ -115,7 +115,7 @@ export const EventMap: React.FC<EventMapProps> = ({ stops }) => {
           ))}
         </MapView>
       ) : (
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: sf.surface, alignItems: 'center', justifyContent: 'center', gap: 8 }]}>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: sf.surface, alignItems: 'center', justifyContent: 'center', gap: 8 }]}>
           <Ionicons name="map-outline" size={40} color={sf.grayDark} />
           <Text style={{ color: sf.grayDark, fontSize: 12 }}>Map requires a development build</Text>
         </View>
