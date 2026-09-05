@@ -14,15 +14,6 @@ export interface UserProfile {
   isVerified?: boolean;
 }
 
-// Used for mock event participants (walk attendees)
-export interface User {
-  id: string;
-  name: string;
-  surname: string;
-  avatar: string;
-  email: string;
-}
-
 export interface Photo {
   id: string;
   imageUrl: string;
@@ -46,19 +37,4 @@ export interface Walk {
   stops: Stop[];
   participantUids: string[];
   tags: string[];
-}
-
-export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  coverImage: string;
-  participantsCount: number;
-  stops: Stop[];
-  participants: User[];
-  photos?: Photo[];
-  centerLatitude?: number;
-  centerLongitude?: number;
 }
