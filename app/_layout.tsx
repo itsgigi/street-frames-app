@@ -1,7 +1,6 @@
 import {DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 import 'react-native-reanimated';
-import '../global.css';
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 

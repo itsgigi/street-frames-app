@@ -6,19 +6,18 @@ import { sf } from '@/constants/theme';
 interface AvatarProps {
   source: { uri: string } | number;
   size?: number;
-  className?: string;
   isVerified?: boolean;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ source, size = 40, className, isVerified }) => {
+export const Avatar: React.FC<AvatarProps> = ({ source, size = 40, isVerified }) => {
   const badgeSize = Math.max(12, Math.round(size * 0.32));
 
   return (
     <View style={{ width: size, height: size }}>
-      <View className={`rounded-full overflow-hidden ${className || ''}`} style={{ width: size, height: size }}>
+      <View style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}>
         <Image
           source={source}
-          className="w-full h-full"
+          style={{ width: '100%', height: '100%' }}
           resizeMode="cover"
         />
       </View>

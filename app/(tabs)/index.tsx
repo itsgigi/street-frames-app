@@ -53,7 +53,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: sf.cream }}>
 
-      <RefreshableScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className='mt-4'>
+      <RefreshableScrollView showsVerticalScrollIndicator={false} style={{ flex: 1, marginTop: 16 }}>
 
         {/* Upcoming Walk */}
         <ScreenHeader title="UPCOMING WALKS" style={{ paddingVertical: 0, marginBottom: 14 }} />
