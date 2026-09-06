@@ -242,7 +242,7 @@ export default function ProfileScreen() {
             }}>
               {userWalks.map((walk) => {
                 const isPast = new Date(walk.date) <= new Date();
-                const participantsCount = getValidParticipantUids(walk.participantUids).length;
+                const participantsCount = getValidParticipantUids(walk.participantUIDs).length;
                 return (
                   <TouchableOpacity
                     key={walk.id}

@@ -24,7 +24,7 @@ export default function HomeScreen() {
     const unsubLatest = subscribeToLatestWalk((walk) => {
       setLatestWalk(walk);
 
-      const validUids = getValidParticipantUids(walk?.participantUids ?? []).slice(0, 3);
+      const validUids = getValidParticipantUids(walk?.participantUIDs ?? []).slice(0, 3);
       const uidsKey = validUids.join(',');
 
       if (uidsKey === prevUidsKeyRef.current) return;
@@ -46,7 +46,7 @@ export default function HomeScreen() {
   }, []);
 
   const validParticipantUids = latestWalk
-    ? getValidParticipantUids(latestWalk.participantUids)
+    ? getValidParticipantUids(latestWalk.participantUIDs)
     : [];
 
   return (
@@ -127,7 +127,7 @@ export default function HomeScreen() {
                     imageUri={walk.coverImage}
                     title={walk.title}
                     date={walk.date}
-                    participants={getValidParticipantUids(walk.participantUids).length}
+                    participants={getValidParticipantUids(walk.participantUIDs).length}
                     onPress={() => router.push(`/event/${walk.id}`)}
                   />
                 ))}

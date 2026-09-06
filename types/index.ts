@@ -35,6 +35,6 @@ export interface Walk {
   description: string;
   date: string;
   stops: Stop[];
-  participantUids: string[];
+  participantUIDs: string[];
   tags: string[];
 }

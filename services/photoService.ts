@@ -33,7 +33,7 @@ async function assertWalkParticipant(userId: string, walkId: string): Promise<vo
     throw new Error('Walk not found');
   }
 
-  if (!walk.participantUids.includes(userId)) {
+  if (!walk.participantUIDs.includes(userId)) {
     throw new Error('Only participants can upload photos for this walk');
   }
 }

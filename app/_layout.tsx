@@ -4,7 +4,7 @@ import 'react-native-reanimated';
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
-import {useColorScheme} from '@/hooks/use-color-scheme';
+import {useColorScheme} from '@/hooks/useColorScheme';
 import {AuthProvider, useAuth} from '@/contexts/authContext';
 import {QueryProvider} from '@/contexts/queryContext';
 import { useFonts, ChauPhilomeneOne_400Regular } from '@expo-google-fonts/chau-philomene-one';

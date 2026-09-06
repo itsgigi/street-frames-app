@@ -28,7 +28,7 @@ function docToWalk(id: string, data: Record<string, any>): Walk {
       ? data.date.toDate().toISOString()
       : (data.date ?? new Date().toISOString()),
     stops: parseStops(data.stops ?? []),
-    participantUids: data.participantUIDs ?? data.participantUids ?? [],
+    participantUIDs: data.participantUIDs ?? [],
     tags: data.tags ?? [],
   };
 }

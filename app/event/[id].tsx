@@ -56,11 +56,11 @@ export default function EventDetailsScreen() {
       setWalk(w);
 
       if (!w) return;
-      const uidsKey = [...w.participantUids].sort().join(',');
+      const uidsKey = [...w.participantUIDs].sort().join(',');
       if (uidsKey === prevUidsRef.current) return;
       prevUidsRef.current = uidsKey;
 
-      getUserProfiles(w.participantUids).then(setParticipants);
+      getUserProfiles(w.participantUIDs).then(setParticipants);
     });
 
     return unsub;
@@ -77,7 +77,7 @@ export default function EventDetailsScreen() {
     if (!user || !walk) return;
     setJoining(true);
     try {
-      const alreadyJoined = walk.participantUids.includes(user.uid);
+      const alreadyJoined = walk.participantUIDs.includes(user.uid);
       if (alreadyJoined) {
         await leaveWalk(walk.id, user.uid);
       } else {
@@ -211,7 +211,7 @@ export default function EventDetailsScreen() {
 
   // ── Live Firestore walk ──────────────────────────────────────────────────
   const isPast  = new Date(walk.date) <= new Date();
-  const joined  = !!user && walk.participantUids.includes(user.uid);
+  const joined  = !!user && walk.participantUIDs.includes(user.uid);
 
   return (
     <View style={{ flex: 1, backgroundColor: sf.cream }}>

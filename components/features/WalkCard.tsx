@@ -11,7 +11,7 @@ const CARD_H = 110;
 export function WalkCard({ walk, isUpcoming, onPress }: {
   walk: Walk; isUpcoming: boolean; onPress: () => void;
 }) {
-  const participantsCount = getValidParticipantUids(walk.participantUids).length;
+  const participantsCount = getValidParticipantUids(walk.participantUIDs).length;
 
   return (
     <View style={{
