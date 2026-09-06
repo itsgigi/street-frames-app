@@ -139,13 +139,13 @@ export default function LoginScreen() {
                 position: 'absolute', bottom: 0, right: 0,
                 width: 26, height: 26, borderRadius: 13,
                 backgroundColor: sf.orange, alignItems: 'center', justifyContent: 'center',
-                borderWidth: 2, borderColor: '#fff',
+                borderWidth: 2, borderColor: sf.white,
               }}>
-                <Text style={{ color: '#fff', fontSize: 13, lineHeight: 15 }}>+</Text>
+                <Text style={{ color: sf.white, fontSize: 13, lineHeight: 15 }}>+</Text>
               </View>
             </View>
           </TouchableOpacity>
-          <Text style={{ fontSize: 12, color: '#888' }}>
+          <Text style={{ fontSize: 12, color: sf.grayDark }}>
             {localImageUri ? 'Tap to change photo' : 'Add profile photo (optional)'}
           </Text>
         </View>
@@ -209,7 +209,7 @@ export default function LoginScreen() {
 
       <TouchableOpacity style={[styles.button, submitting && { opacity: 0.7 }]} onPress={handleSubmit} disabled={submitting}>
         {submitting
-          ? <ActivityIndicator color="#fff" />
+          ? <ActivityIndicator color={sf.cream} />
           : <Text style={styles.buttonText}>{isLogin ? 'Login' : 'Sign Up'}</Text>
         }
       </TouchableOpacity>
@@ -228,40 +228,44 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    backgroundColor: sf.cream,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
+    color: sf.black,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: sf.grayLight,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
+    color: sf.black,
+    backgroundColor: sf.white,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: sf.orange,
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 16,
   },
   buttonText: {
-    color: '#fff',
+    color: sf.cream,
     fontWeight: 'bold',
     fontSize: 16,
   },
   error: {
-    color: 'red',
+    color: sf.rust,
     marginBottom: 12,
     textAlign: 'center',
   },
   link: {
-    color: '#007AFF',
+    color: sf.orange,
     textAlign: 'center',
     fontSize: 14,
   },
