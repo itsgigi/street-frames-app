@@ -6,6 +6,7 @@ import {useRouter} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {subscribeToLatestWalk, subscribeToPastWalks} from '@/services/walkService';
 import {getUserProfiles} from '@/services/userService';
+import {getValidParticipantUids} from '@/services/participantUtils';
 import {HeroCard} from '@/components/cards/HeroCard';
 import {PastCard} from '@/components/cards/PastCard';
 import {ScreenHeader} from '@/components/ui/ScreenHeader';
@@ -23,9 +24,7 @@ export default function HomeScreen() {
     const unsubLatest = subscribeToLatestWalk((walk) => {
       setLatestWalk(walk);
 
-      const validUids = (walk?.participantUids ?? [])
-        .filter(uid => uid?.trim().length > 0)
-        .slice(0, 3);
+      const validUids = getValidParticipantUids(walk?.participantUids ?? []).slice(0, 3);
       const uidsKey = validUids.join(',');
 
       if (uidsKey === prevUidsKeyRef.current) return;
@@ -47,7 +46,7 @@ export default function HomeScreen() {
   }, []);
 
   const validParticipantUids = latestWalk
-    ? latestWalk.participantUids.filter(uid => uid?.trim().length > 0)
+    ? getValidParticipantUids(latestWalk.participantUids)
     : [];
 
   return (
@@ -128,7 +127,7 @@ export default function HomeScreen() {
                     imageUri={walk.coverImage}
                     title={walk.title}
                     date={walk.date}
-                    participants={walk.participantUids.filter(u => u?.trim().length > 0).length}
+                    participants={getValidParticipantUids(walk.participantUids).length}
                     onPress={() => router.push(`/event/${walk.id}`)}
                   />
                 ))}

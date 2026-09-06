@@ -18,6 +18,7 @@ import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
 import { fonts, sf, cardBorder } from '@/constants/theme';
+import { getValidParticipantUids } from '@/services/participantUtils';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
@@ -241,6 +242,7 @@ export default function ProfileScreen() {
             }}>
               {userWalks.map((walk) => {
                 const isPast = new Date(walk.date) <= new Date();
+                const participantsCount = getValidParticipantUids(walk.participantUids).length;
                 return (
                   <TouchableOpacity
                     key={walk.id}
@@ -286,7 +288,7 @@ export default function ProfileScreen() {
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                           <Ionicons name="people-outline" size={11} color={sf.cream} style={{ opacity: 0.6 }} />
                           <Text style={{ fontSize: 11, color: sf.cream, opacity: 0.6 }}>
-                            {walk.participantUids.length} photographers
+                            {participantsCount} photographers
                           </Text>
                         </View>
                       </View>
