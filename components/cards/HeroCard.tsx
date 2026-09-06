@@ -64,7 +64,7 @@ export function HeroCard({ imageUri, title, date, onPress }: HeroCardProps) {
       </Svg>
 
       {/* Date — top left, inside left blob */}
-      <View style={styles.dateBadge} className='rounded-xl px-3 py-1.5'>
+      <View style={styles.dateBadge}>
         <Text style={styles.dateText}>{formattedDate}</Text>
         <Text style={styles.timeText}>{formattedTime}</Text>
       </View>
@@ -92,6 +92,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(191, 91, 33,0.8)',
     borderWidth: cardBorder.borderWidth,
     borderColor: cardBorder.borderColor,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     shadowColor: 'black', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5
   },
   dateText: {

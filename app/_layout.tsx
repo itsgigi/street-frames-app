@@ -1,12 +1,10 @@
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
-import {Stack, useRouter} from 'expo-router';
+import {DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 import 'react-native-reanimated';
-import '../global.css';
 import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
-import {useColorScheme} from '@/hooks/use-color-scheme';
+import {useColorScheme} from '@/hooks/useColorScheme';
 import {AuthProvider, useAuth} from '@/contexts/authContext';
 import {QueryProvider} from '@/contexts/queryContext';
 import { useFonts, ChauPhilomeneOne_400Regular } from '@expo-google-fonts/chau-philomene-one';

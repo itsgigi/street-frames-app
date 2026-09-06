@@ -1,63 +1,29 @@
+import { GalleryPhoto } from '@/types';
+import { uploadWalkImage, deleteWalkImage } from '@/services/storageService';
+import { getWalkById } from '@/services/walkService';
+import { normalizeTags } from '@/services/tagUtils';
 import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  serverTimestamp,
-  Timestamp,
-  where,
-} from '@firebase/firestore';
-import {db} from '@/services/firebaseConfig';
-import {GalleryPhoto} from '@/types';
-import {uploadWalkImage, deleteWalkImage} from '@/services/storageService';
-import {getWalkById} from '@/services/walkService';
-import {normalizeTags} from '@/services/tagUtils';
+  createPhotoMetadata,
+  deletePhotoMetadata,
+  countPhotosForUserAndWalk,
+  getWalkGallery,
+  getGlobalGallery,
+  getGalleryByTag,
+  getPhotosByUser,
+} from '@/services/photoMetadataService';
 
-const COLLECTION = 'photos';
+// Orchestrates photo upload/delete across the two backends: Supabase Storage holds
+// the image bytes, Firestore (via photoMetadataService) holds the metadata that
+// points to them. This is the only module allowed to import both — everywhere
+// else, storage and metadata concerns stay isolated in their own service.
+
 export const MAX_PHOTOS_PER_USER_PER_WALK = 3;
-
-interface FirestorePhotoDoc {
-  imageUrl: string;
-  userId: string;
-  walkId: string;
-  storagePath?: string;
-  createdAt?: Timestamp;
-  tags: string[];
-}
-
-interface CreatePhotoMetadataInput {
-  imageUrl: string;
-  userId: string;
-  walkId: string;
-  storagePath?: string;
-  tags?: string[];
-}
 
 interface UploadWalkPhotoInput {
   localUri: string;
   userId: string;
   walkId: string;
   tags?: string[];
-}
-
-
-function docToPhoto(id: string, data: FirestorePhotoDoc): GalleryPhoto {
-  return {
-    id,
-    imageUrl: data.imageUrl,
-    userId: data.userId,
-    walkId: data.walkId,
-    storagePath: data.storagePath,
-    tags: data.tags ?? [],
-    createdAt: data.createdAt instanceof Timestamp
-      ? data.createdAt.toDate().toISOString()
-      : undefined,
-  };
 }
 
 async function assertWalkParticipant(userId: string, walkId: string): Promise<void> {
@@ -67,48 +33,17 @@ async function assertWalkParticipant(userId: string, walkId: string): Promise<vo
     throw new Error('Walk not found');
   }
 
-  if (!walk.participantUids.includes(userId)) {
+  if (!walk.participantUIDs.includes(userId)) {
     throw new Error('Only participants can upload photos for this walk');
   }
 }
 
-async function getUserPhotoCountForWalk(userId: string, walkId: string): Promise<number> {
-  const q = query(
-    collection(db, COLLECTION),
-    where('userId', '==', userId),
-    where('walkId', '==', walkId),
-  );
-
-  const snapshot = await getDocs(q);
-  return snapshot.size;
-}
-
 async function assertPhotoLimitNotExceeded(userId: string, walkId: string): Promise<void> {
-  const photoCount = await getUserPhotoCountForWalk(userId, walkId);
+  const photoCount = await countPhotosForUserAndWalk(userId, walkId);
 
   if (photoCount >= MAX_PHOTOS_PER_USER_PER_WALK) {
     throw new Error(`You can only upload ${MAX_PHOTOS_PER_USER_PER_WALK} photos per walk. You have already reached the limit.`);
   }
-}
-
-export async function createPhotoMetadata({
-  imageUrl,
-  userId,
-  walkId,
-  storagePath,
-  tags = [],
-}: CreatePhotoMetadataInput): Promise<string> {
-  const payload: Omit<FirestorePhotoDoc, 'createdAt'> & { createdAt: ReturnType<typeof serverTimestamp> } = {
-    imageUrl,
-    userId,
-    walkId,
-    storagePath,
-    tags: normalizeTags(tags),
-    createdAt: serverTimestamp(),
-  };
-
-  const ref = await addDoc(collection(db, COLLECTION), payload);
-  return ref.id;
 }
 
 export async function uploadWalkPhoto({
@@ -122,7 +57,17 @@ export async function uploadWalkPhoto({
 
   const { imageUrl, storagePath } = await uploadWalkImage({ localUri, userId, walkId });
 
-  const id = await createPhotoMetadata({ imageUrl, userId, walkId, storagePath, tags });
+  let id: string;
+  try {
+    id = await createPhotoMetadata({ imageUrl, userId, walkId, storagePath, tags });
+  } catch (err) {
+    // The image already landed in storage but its metadata failed to save — clean up
+    // the orphaned file so a retry doesn't leave duplicate blobs behind in Supabase.
+    await deleteWalkImage(storagePath).catch((cleanupErr) => {
+      console.error('Failed to clean up orphaned photo after metadata write failure:', cleanupErr);
+    });
+    throw err;
+  }
 
   return {
     id,
@@ -136,79 +81,16 @@ export async function uploadWalkPhoto({
 }
 
 export async function deletePhoto(photoId: string, requestingUserId: string): Promise<void> {
-  const photoRef = doc(db, COLLECTION, photoId);
-  const snapshot = await getDoc(photoRef);
+  const { storagePath } = await deletePhotoMetadata(photoId, requestingUserId);
 
-  if (!snapshot.exists()) {
-    throw new Error('Photo not found');
-  }
-
-  const data = snapshot.data() as FirestorePhotoDoc;
-  if (data.userId !== requestingUserId) {
-    throw new Error('You can only delete your own photos');
-  }
-
-  await deleteDoc(photoRef);
-
-  if (data.storagePath) {
-    await deleteWalkImage(data.storagePath);
+  if (storagePath) {
+    // The Firestore doc — the source of truth for what the gallery shows — is
+    // already gone at this point, so a storage cleanup failure here is logged
+    // but not surfaced as a failed delete to the user.
+    await deleteWalkImage(storagePath).catch((err) => {
+      console.error('Failed to delete orphaned photo from storage:', err);
+    });
   }
 }
 
-export async function getWalkGallery(walkId: string): Promise<GalleryPhoto[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    where('walkId', '==', walkId),
-  );
-
-  const snapshot = await getDocs(q);
-  const photos = snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
-  return photos.sort((a, b) => {
-    if (!a.createdAt || !b.createdAt) return 0;
-    return b.createdAt.localeCompare(a.createdAt);
-  });
-}
-
-export async function getGlobalGallery(maxItems = 50): Promise<GalleryPhoto[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    orderBy('createdAt', 'desc'),
-    limit(maxItems)
-  );
-
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
-}
-
-export async function getGalleryByTag(tag: string, maxItems = 50): Promise<GalleryPhoto[]> {
-  const normalizedTag = tag.trim().toLowerCase();
-  if (!normalizedTag) return [];
-
-  const q = query(
-    collection(db, COLLECTION),
-    where('tags', 'array-contains', normalizedTag),
-    orderBy('createdAt', 'desc'),
-    limit(maxItems)
-  );
-
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
-}
-
-export async function getPhotosByUser(userId: string, maxItems = 6): Promise<GalleryPhoto[]> {
-  const q = query(
-    collection(db, COLLECTION),
-    where('userId', '==', userId),
-    limit(maxItems)
-  );
-
-  const snapshot = await getDocs(q);
-  const photos = snapshot.docs.map((doc) => docToPhoto(doc.id, doc.data() as FirestorePhotoDoc));
-  return photos
-    .sort((a, b) => {
-      if (!a.createdAt || !b.createdAt) return 0;
-      return b.createdAt.localeCompare(a.createdAt);
-    })
-    .slice(0, maxItems);
-}
-
+export { getWalkGallery, getGlobalGallery, getGalleryByTag, getPhotosByUser };

@@ -10,6 +10,7 @@ import {
 import { FirebaseError } from 'firebase/app';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
+import { sf } from '@/constants/theme';
 
 export default function ForgotPasswordScreen() {
   const { email: emailParam } = useLocalSearchParams<{ email?: string | string[] }>();
@@ -90,7 +91,7 @@ export default function ForgotPasswordScreen() {
             disabled={submitting}
           >
             {submitting
-              ? <ActivityIndicator color="#fff" />
+              ? <ActivityIndicator color={sf.cream} />
               : <Text style={styles.buttonText}>Send reset link</Text>
             }
           </TouchableOpacity>
@@ -109,53 +110,57 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    backgroundColor: sf.cream,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 8,
     textAlign: 'center',
+    color: sf.black,
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: sf.grayDark,
     textAlign: 'center',
     marginBottom: 24,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: sf.grayLight,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     fontSize: 16,
+    color: sf.black,
+    backgroundColor: sf.white,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: sf.orange,
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 16,
   },
   buttonText: {
-    color: '#fff',
+    color: sf.cream,
     fontWeight: 'bold',
     fontSize: 16,
   },
   error: {
-    color: 'red',
+    color: sf.rust,
     marginBottom: 12,
     textAlign: 'center',
   },
   successText: {
     fontSize: 15,
-    color: '#333',
+    color: sf.black,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,
   },
   link: {
-    color: '#007AFF',
+    color: sf.orange,
     textAlign: 'center',
     fontSize: 14,
   },

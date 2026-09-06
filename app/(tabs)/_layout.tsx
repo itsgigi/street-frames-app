@@ -1,5 +1,5 @@
 import {Tabs} from 'expo-router';
-import {Platform, StyleSheet, View} from 'react-native';
+import {ColorValue, Platform, StyleSheet, View} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {BlurView} from 'expo-blur';
 import {sf} from '@/constants/theme';
@@ -11,7 +11,7 @@ const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 function TabIcon({name, focusedName, focused, color}: {
-  name: IoniconsName; focusedName: IoniconsName; focused: boolean; color: string;
+  name: IoniconsName; focusedName: IoniconsName; focused: boolean; color: ColorValue;
 }) {
   return (
     <View style={focused ? {
@@ -48,14 +48,14 @@ export default function TabLayout() {
         tabBarInactiveTintColor: 'rgba(33,34,38,0.35)',
         tabBarBackground: () => (
           <View style={{
-            ...StyleSheet.absoluteFillObject,
+            ...StyleSheet.absoluteFill,
             borderRadius: 26,
             overflow: 'hidden',
           }}>
             <BlurView
               tint="light"
               intensity={88}
-              style={StyleSheet.absoluteFillObject}
+              style={StyleSheet.absoluteFill}
             />
           </View>),
         tabBarStyle: {

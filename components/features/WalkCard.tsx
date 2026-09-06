@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Walk } from '@/types';
 import { fonts, sf } from '@/constants/theme';
+import { getValidParticipantUids } from '@/services/participantUtils';
 
 const CARD_PAD = 18;
 const CARD_H = 110;
@@ -10,7 +11,7 @@ const CARD_H = 110;
 export function WalkCard({ walk, isUpcoming, onPress }: {
   walk: Walk; isUpcoming: boolean; onPress: () => void;
 }) {
-  const participantsCount = walk.participantUids.filter(uid => uid?.trim().length > 0).length;
+  const participantsCount = getValidParticipantUids(walk.participantUIDs).length;
 
   return (
     <View style={{

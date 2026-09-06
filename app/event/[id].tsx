@@ -11,7 +11,6 @@ import { EventMap } from '@/components/features/EventMap';
 import { ParticipantsList } from '@/components/features/ParticipantsList';
 import { WalkGallery } from '@/components/features/WalkGallery';
 import { RefreshableScrollView } from '@/components/ui/RefreshableScrollView';
-import { getEventById } from '@/services/mockData';
 import { getWalkGallery, MAX_PHOTOS_PER_USER_PER_WALK, uploadWalkPhoto } from '@/services/photoService';
 import { subscribeToWalkById, joinWalk, leaveWalk } from '@/services/walkService';
 import { getUserProfiles } from '@/services/userService';
@@ -27,11 +26,7 @@ export default function EventDetailsScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Try mock data first — if found, it's a past event
-  const mockEvent = getEventById(id ?? '');
-
-  // Firestore walk state (only used when mockEvent is null)
-  const [walk, setWalk] = useState<Walk | null | undefined>(mockEvent ? null : undefined);
+  const [walk, setWalk] = useState<Walk | null | undefined>(undefined);
   const [participants, setParticipants] = useState<UserProfile[]>([]);
   const [joining, setJoining] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -45,7 +40,7 @@ export default function EventDetailsScreen() {
   const { data: galleryPhotos, refetch: refetchGallery } = useQuery({
     queryKey: galleryQueryKeys.walk(id ?? ''),
     queryFn: () => getWalkGallery(id ?? ''),
-    enabled: !mockEvent && !!id,
+    enabled: !!id,
   });
 
   const userPhotoCount = user
@@ -55,17 +50,17 @@ export default function EventDetailsScreen() {
   const remainingSlots = MAX_PHOTOS_PER_USER_PER_WALK - userPhotoCount;
 
   useEffect(() => {
-    if (mockEvent || !id) return;
+    if (!id) return;
 
     const unsub = subscribeToWalkById(id, (w) => {
       setWalk(w);
 
       if (!w) return;
-      const uidsKey = [...w.participantUids].sort().join(',');
+      const uidsKey = [...w.participantUIDs].sort().join(',');
       if (uidsKey === prevUidsRef.current) return;
       prevUidsRef.current = uidsKey;
 
-      getUserProfiles(w.participantUids).then(setParticipants);
+      getUserProfiles(w.participantUIDs).then(setParticipants);
     });
 
     return unsub;
@@ -82,7 +77,7 @@ export default function EventDetailsScreen() {
     if (!user || !walk) return;
     setJoining(true);
     try {
-      const alreadyJoined = walk.participantUids.includes(user.uid);
+      const alreadyJoined = walk.participantUIDs.includes(user.uid);
       if (alreadyJoined) {
         await leaveWalk(walk.id, user.uid);
       } else {
@@ -193,55 +188,6 @@ export default function EventDetailsScreen() {
     }
   };
 
-  // ── Mock event (past walks) ──────────────────────────────────────────────
-  if (mockEvent) {
-    const isUpcoming = new Date(mockEvent.date) > new Date();
-    const joinedMockEvent = !!user;
-    return (
-      <View style={{ flex: 1, backgroundColor: sf.cream }}>
-        <RefreshableScrollView onRefresh={refetchGallery} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-          <EventHeader
-            title={mockEvent.title}
-            date={mockEvent.date}
-            location={mockEvent.location}
-            coverImage={mockEvent.coverImage}
-            onBack={() => router.back()}
-            onShare={() => Share.share({
-              message: makeShareMessage(mockEvent.title, mockEvent.date, mockEvent.location),
-              title: mockEvent.title,
-            })}
-          />
-          <View style={{ paddingHorizontal: 20, paddingTop: 24, gap: 16 }}>
-            <View style={shadow}>
-              <EventDescription description={mockEvent.description} />
-            </View>
-            <View style={shadow}>
-              <WalkGallery walkId={mockEvent.id} />
-            </View>
-            <View style={shadow}>
-              <ParticipantsList participants={[]} />
-            </View>
-          </View>
-        </RefreshableScrollView>
-        {isUpcoming && <JoinBar onPress={() => {}} joining={false} isPast={false} joined={false} insetBottom={insets.bottom} />}
-        <UploadBar
-          onPress={() => handlePickImages(mockEvent.id, joinedMockEvent, limitReached)}
-          uploading={uploading}
-          canUpload={joinedMockEvent}
-          limitReached={limitReached}
-          insetBottom={insets.bottom}
-        />
-        <UploadPreviewModal
-          assets={previewAssets}
-          uploading={uploading}
-          onRemove={removePreviewAsset}
-          onCancel={handleCancelPreview}
-          onConfirm={handleConfirmUpload}
-        />
-      </View>
-    );
-  }
-
   // ── Loading Firestore walk ───────────────────────────────────────────────
   if (walk === undefined) {
     return (
@@ -265,7 +211,7 @@ export default function EventDetailsScreen() {
 
   // ── Live Firestore walk ──────────────────────────────────────────────────
   const isPast  = new Date(walk.date) <= new Date();
-  const joined  = !!user && walk.participantUids.includes(user.uid);
+  const joined  = !!user && walk.participantUIDs.includes(user.uid);
 
   return (
     <View style={{ flex: 1, backgroundColor: sf.cream }}>
