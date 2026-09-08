@@ -13,9 +13,23 @@
       "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPhotoLibraryUsageDescription": "Street Frame uses your photo library to set your profile picture."
+        "NSPhotoLibraryUsageDescription": "Street Frame uses your photo library to set your profile picture and to upload photos you take during photowalks."
       },
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -37,8 +51,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Street Frames to access your photos to set a profile picture.",
-          "cameraPermission": "Allow Street Frames to use your camera to take a profile picture."
+          "photosPermission": "Allow Street Frames to access your photos to set a profile picture and upload photos you take during photowalks.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [

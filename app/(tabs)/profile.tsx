@@ -8,12 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import * as WebBrowser from 'expo-web-browser';
 import { getPhotosByUser } from '@/services/photoService';
 import { galleryQueryKeys } from '@/services/queryKeys';
 import { subscribeToUserWalks } from '@/services/walkService';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Avatar } from '@/components/ui/Avatar';
 import { RefreshableScrollView } from '@/components/ui/RefreshableScrollView';
+import { DeleteAccountModal } from '@/components/features/DeleteAccountModal';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { useAuth } from '@/contexts/authContext';
 import { Walk } from '@/types';
@@ -22,11 +24,15 @@ import { getValidParticipantUids } from '@/services/participantUtils';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
+const PRIVACY_URL = 'https://itsgigi.github.io/street-frames/';
+const TERMS_URL = 'https://itsgigi.github.io/street-frames/terms/';
+
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<'walks' | 'admin'>('walks');
   const [userWalks, setUserWalks] = useState<Walk[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { logout } = useAuthMethods();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const { logout, deleteAccount } = useAuthMethods();
   const { userProfile, user, loading } = useAuth();
 
   useEffect(() => {
@@ -62,6 +68,16 @@ export default function ProfileScreen() {
     });
   };
 
+  const handleOpenPrivacy = () => {
+    setMenuOpen(false);
+    WebBrowser.openBrowserAsync(PRIVACY_URL);
+  };
+
+  const handleOpenTerms = () => {
+    setMenuOpen(false);
+    WebBrowser.openBrowserAsync(TERMS_URL);
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sf.cream }}>
 
@@ -82,12 +98,40 @@ export default function ProfileScreen() {
                   position: 'absolute', top: 36, right: 0, zIndex: 1000,
                   backgroundColor: sf.white,
                   borderRadius: 8,
-                  minWidth: 180,
+                  minWidth: 200,
                   borderWidth: 1, borderColor: 'rgba(33,34,38,0.1)',
                   ...shadow,
                 }}
                 onPress={() => {}}
               >
+                <TouchableOpacity
+                  onPress={handleOpenPrivacy}
+                  style={{
+                    paddingHorizontal: 16, paddingVertical: 12,
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                  }}
+                >
+                  <Ionicons name="shield-checkmark-outline" size={18} color={sf.grayDark} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: sf.grayDark }}>
+                    Privacy Policy
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleOpenTerms}
+                  style={{
+                    paddingHorizontal: 16, paddingVertical: 12,
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                  }}
+                >
+                  <Ionicons name="document-text-outline" size={18} color={sf.grayDark} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: sf.grayDark }}>
+                    Terms of Service
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={{ height: 1, backgroundColor: 'rgba(33,34,38,0.1)' }} />
+
                 <TouchableOpacity
                   onPress={() => {
                     setMenuOpen(false);
@@ -101,6 +145,22 @@ export default function ProfileScreen() {
                   <Ionicons name="log-out-outline" size={18} color={sf.grayDark} />
                   <Text style={{ fontSize: 13, fontWeight: '600', color: sf.grayDark }}>
                     Sign out
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setMenuOpen(false);
+                    setDeleteModalOpen(true);
+                  }}
+                  style={{
+                    paddingHorizontal: 16, paddingVertical: 12,
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={18} color={sf.rust} />
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: sf.rust }}>
+                    Delete account
                   </Text>
                 </TouchableOpacity>
               </Pressable>
@@ -330,6 +390,12 @@ export default function ProfileScreen() {
 
 
       </RefreshableScrollView>
+
+      <DeleteAccountModal
+        visible={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={deleteAccount}
+      />
     </SafeAreaView>
   );
 }

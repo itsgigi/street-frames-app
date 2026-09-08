@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, ActivityIndicator, Pressable } from 'react-native';
 import { FirebaseError } from 'firebase/app';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useAuthMethods } from '@/hooks/useAuthMethods';
 import { imageUriToBase64 } from '@/services/storageService';
-import { sf } from '@/constants/theme';
+import { fonts, sf } from '@/constants/theme';
 
 const PLACEHOLDER_AVATAR = 'https://i.pravatar.cc/150?img=0';
 
@@ -120,7 +120,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{isLogin ? 'Login' : 'Sign Up'}</Text>
+      <Text style={styles.title}>{isLogin ? 'LOGIN' : 'SIGN UP'}</Text>
 
       {/* Avatar picker — sign-up only */}
       {!isLogin && (
@@ -236,6 +236,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     textAlign: 'center',
     color: sf.black,
+    fontFamily: fonts.heading,
   },
   input: {
     borderWidth: 1,
